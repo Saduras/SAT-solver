@@ -6,16 +6,21 @@ class DPTests(unittest.TestCase):
         cnf = []
         self.assertEqual(removeTautology(cnf), cnf)
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+    def test_removeTautology_nochange(self):
+        cnf = [[(123, True), (113, False)],[(321, False)]]
+        self.assertEqual(removeTautology(cnf), cnf)
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+    def test_removeTautology_inconsitent(self):
+        cnf = [[(123, True), (113, False)],[(321, False)], []]
+        self.assertEqual(removeTautology(cnf), cnf)
+
+    def test_removeTautology_simple(self):
+        cnf = [[(123, True), (123, False)]]
+        self.assertEqual(removeTautology(cnf),[])
+
+    def test_removeTautology_with_noise(self):
+        cnf = [[(123, True), (312, True), (423, False), (123, False)]]
+        self.assertEqual(removeTautology(cnf),[])
 
 if __name__ == '__main__':
     unittest.main()

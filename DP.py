@@ -2,7 +2,21 @@ def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
 
 def removeTautology(cnf):
-    # TODO
+    for clause in cnf:
+        pos_vars = set()
+        neg_vars = set()
+
+        for literal in clause:
+            if(literal[1]):
+                neg_vars.add(literal[0])
+            else:
+                pos_vars.add(literal[0])
+
+        for literal in clause:
+            if(literal[0] in pos_vars and literal[0] in neg_vars):
+                cnf.remove(clause)
+                break
+
     return cnf
 
 def removeUnitClause(cnf, assignment):
