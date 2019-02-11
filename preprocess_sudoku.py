@@ -1,4 +1,4 @@
-import sys;
+import sys
 
 def append_rules(filename, rule_path, output):
     """
@@ -27,4 +27,4 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     output = sys.argv[2]
 
-    append_rules(filename, output)
+    append_rules(filename, rule_path, output)
