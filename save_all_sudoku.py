@@ -44,6 +44,6 @@ def load_all_sudoku(path, name):
 
 
 if __name__ == "__main__":
-    path = ".\\data\\top2365.sdk.txt"
-    name = "top2365"
+    path = ".\\data\\1000 sudokus.txt"
+    name = "1000 sudokus"
     sdk = load_all_sudoku(path, name)
