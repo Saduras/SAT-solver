@@ -11,8 +11,8 @@ def load_sudoku(path, sdk_n, save = True):
         path: path to the file with sudokus in str format
         sdk_n = number of the sudoku (= number of the line in the file) to be 
         loaded.
-    return: list of list of tuples
-        [[(clause (type int), negation (type boolean))]]
+    return: list of clauses
+    saves: .txt file with the sudoku in cnf format
     """
     
     #load file
@@ -20,8 +20,6 @@ def load_sudoku(path, sdk_n, save = True):
     with open(path, 'r') as file:
         for i in range(sdk_n+1):
             line = file.readline()
-            
-    print("line:" , line)
     
     sudoku = []
     str_sdk = str()
@@ -30,11 +28,11 @@ def load_sudoku(path, sdk_n, save = True):
     for i in range(1,10):
         for j in range(1,10):
             if line[c] != ".":
+                #cnf formatation
                 sudoku.append(str(i)+str(j)+line[c])
                 str_sdk += sudoku[-1]+eoc
             c += 1
        
-    
     if save:
         name = "sudoku"+str(sdk_n)+".txt"
         save_path = ".\\data\\dimac_sudoku\\"
