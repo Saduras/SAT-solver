@@ -44,6 +44,6 @@ def load_all_sudoku(path, name):
 
 
 if __name__ == "__main__":
-    path = ".\\data\\damnhard.sdk.txt"
-    name = "damnhard"
+    path = ".\\data\\top91.sdk.txt"
+    name = "top91.sdk"
     sdk = load_all_sudoku(path, name)
