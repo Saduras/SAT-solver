@@ -1,5 +1,5 @@
 import unittest
-from DP import removeTautology
+from DP import removeTautology, removeUnitClause, assign
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -21,6 +21,102 @@ class DPTests(unittest.TestCase):
     def test_removeTautology_with_noise(self):
         cnf = [[(123, True), (312, True), (423, False), (123, False)]]
         self.assertEqual(removeTautology(cnf),[])
+
+    def test_removeUnitClause_empty(self):
+        cnf = []
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, cnf)
+        self.assertEqual(new_assignment, assignment)
+        self.assertEqual(change, False)
+
+    def test_removeUnitClause_noUnit(self):
+        cnf = [[(123, True), (321, False)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, cnf)
+        self.assertEqual(new_assignment, assignment)
+        self.assertEqual(change, False)
+
+    def test_removeUnitClause_onlyNegUnit(self):
+        cnf = [[(123, True)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [])
+        self.assertEqual(new_assignment, [-123])
+        self.assertEqual(change, True)
+
+    def test_removeUnitClause_onlyPosUnit(self):
+        cnf = [[(123, False)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [])
+        self.assertEqual(new_assignment, [123])
+        self.assertEqual(change, True)
+
+    def test_removeUnitClause_oneUnitAndNoise(self):
+        cnf = [[(123, True)], [(423, False), (352, True)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [[(423, False), (352, True)]])
+        self.assertEqual(new_assignment, [-123])
+        self.assertEqual(change, True)
+
+    def test_removeUnitClause_manyUnit(self):
+        cnf = [[(123, True)], [(234, False)], [(423, False), (352, True)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [[(423, False), (352, True)]])
+        self.assertEqual(new_assignment, [-123, 234])
+        self.assertEqual(change, True)
+    
+    def test_removeUnitClause_applyAssignment(self):
+        cnf = [[(123, True)], [(123, False), (352, True), (423, False)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [[ (352, True), (423, False)]])
+        self.assertEqual(new_assignment, [-123])
+        self.assertEqual(change, True)
+
+    def test_assign_oneOccurencePos(self):
+        cnf = [[(123, False)]]
+        assignment = []
+
+        new_cnf, new_assignment = assign((123,False), True, cnf, assignment)
+        self.assertEqual(new_cnf, [])
+        self.assertEqual(new_assignment, [123])
+
+    def test_assign_oneOccurenceNeg(self):
+        cnf = [[(123, False)]]
+        assignment = []
+
+        new_cnf, new_assignment = assign((123,False), False, cnf, assignment)
+        self.assertEqual(new_cnf, [ [] ])
+        self.assertEqual(new_assignment, [-123])
+
+    def test_assign_mutliOccurenceSameSign(self):
+        cnf = [[(123, False), (123, False)], [(123, False)], [(234, True)]]
+        assignment = []
+
+        new_cnf, new_assignment = assign((123,False), True, cnf, assignment)
+        self.assertEqual(new_cnf, [ [(234, True)] ])
+        self.assertEqual(new_assignment, [123])
+    
+    def test_assign_mutliOccurenceMixedSign(self):
+        cnf = [[(123, False), (123, True)], [(123, True)], [(234, True)]]
+        assignment = []
+
+        new_cnf, new_assignment = assign((123,False), True, cnf, assignment)
+        self.assertEqual(new_cnf, [ [], [(234, True)] ])
+        self.assertEqual(new_assignment, [123])
+
 
 if __name__ == '__main__':
     unittest.main()

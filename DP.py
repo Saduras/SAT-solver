@@ -19,9 +19,44 @@ def removeTautology(cnf):
 
     return cnf
 
+def assign(literal, value, cnf, assignment):
+    # Add to assignment
+    assign = literal[0]
+    if(literal[1]):
+        assign *= -1
+    if(not value):
+        assign *= -1
+    assignment.append(assign)
+
+    # Remove literals from cnf
+    for clause in cnf.copy():
+        for otherliteral in clause.copy():
+            if otherliteral[0] == literal[0]:
+                if((otherliteral[1] == literal[1]) == value):
+                    # literal becomes true; clause disappears
+                    cnf.remove(clause)
+                    break
+                else:
+                    # literal becomes false; literal is removed
+                    clause.remove(otherliteral)
+
+    return cnf, assignment
+
 def removeUnitClause(cnf, assignment):
-    # TODO
-    return cnf, assignment, False
+    change = False
+    loop = True
+    while loop:
+        # stop looping if nothing changes this iteration
+        loop = False
+        for clause in cnf.copy():
+            if len(clause) == 1:
+                # unit clause found; continue looping
+                loop = True
+                change = True
+
+                cnf, assignment = assign(clause[0], True, cnf, assignment)
+            
+    return cnf, assignment, change
 
 def removePureLiteral(cnf, assignment):
     # TODO: consider removing or optimising
