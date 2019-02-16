@@ -126,6 +126,14 @@ class DPTests(unittest.TestCase):
         self.assertEqual(new_cnf, [ [], [(234, True)] ])
         self.assertEqual(new_assignment, [123])
 
+    def test_assign_removeLiterals(self):
+        cnf = [[(123, False), (123, True)], [(123, True), (234, True)]]
+        assignment = []
+
+        new_cnf, _ = assign((123,False), True, cnf, assignment)
+        self.assertEqual(cnf, [[(123, False), (123, True)], [(123, True), (234, True)]])
+        self.assertEqual(new_cnf, [ [(234, True)] ])
+
     def test_split_oneClausePos(self):
         cnf = [[(123, False)]]
         assignment = []

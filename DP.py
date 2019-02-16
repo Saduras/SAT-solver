@@ -1,3 +1,5 @@
+import copy
+
 DPcalls = 0
 splits = 0
 
@@ -24,26 +26,29 @@ def removeTautology(cnf):
 
 def assign(literal, value, cnf, assignment):
     # Add to assignment
+    result_assignment = assignment.copy()
     assign = literal[0]
     if(literal[1]):
         assign *= -1
     if(not value):
         assign *= -1
-    assignment.append(assign)
+    result_assignment.append(assign)
+
+    result_cnf = copy.deepcopy(cnf)
 
     # Remove literals from cnf
-    for clause in cnf.copy():
+    for clause in result_cnf.copy():
         for otherliteral in clause.copy():
             if otherliteral[0] == literal[0]:
                 if((otherliteral[1] == literal[1]) == value):
                     # literal becomes true; clause disappears
-                    cnf.remove(clause)
+                    result_cnf.remove(clause)
                     break
                 else:
                     # literal becomes false; literal is removed
                     clause.remove(otherliteral)
 
-    return cnf, assignment
+    return result_cnf, result_assignment
 
 def removeUnitClause(cnf, assignment):
     change = False
