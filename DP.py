@@ -1,3 +1,6 @@
+DPcalls = 0
+splits = 0
+
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
 
@@ -63,6 +66,8 @@ def removePureLiteral(cnf, assignment):
     return cnf, assignment, False
 
 def split(value, cnf, assignment):
+    global splits
+    splits += 1
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
 
@@ -80,6 +85,9 @@ def DP(cnf, assignment = []):
         If satisfiable: list of assignments for solution
         else: empty list
     """
+    global DPcalls
+    DPcalls += 1
+
     # success condition: empty set of clauses
     if(len(cnf) == 0):
         return assignment
@@ -106,8 +114,15 @@ def DP(cnf, assignment = []):
     
 
 def solve(cnf):
+    global DPcalls, splits
+    DPcalls = 0
+    splits = 0
+
     cnf = removeTautology(cnf)
-    return DP(cnf)
+    assignment = DP(cnf)
+
+    print("Satisfiable:", len(assignment) > 0,"DP calls:", DPcalls, "splits:", splits)
+    return assignment
 
 def main():
     from load_cnf import load_cnf
