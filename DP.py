@@ -12,13 +12,13 @@ def removeTautology(cnf):
         neg_vars = set()
 
         for literal in clause:
-            if(literal[1]):
-                neg_vars.add(literal[0])
+            if(literal < 0):
+                neg_vars.add(abs(literal))
             else:
-                pos_vars.add(literal[0])
+                pos_vars.add(abs(literal))
 
         for literal in clause:
-            if(literal[0] in pos_vars and literal[0] in neg_vars):
+            if(abs(literal) in pos_vars and abs(literal) in neg_vars):
                 cnf.remove(clause)
                 break
 
@@ -27,9 +27,7 @@ def removeTautology(cnf):
 def assign(literal, value, cnf, assignment):
     # Add to assignment
     result_assignment = assignment.copy()
-    assign = literal[0]
-    if(literal[1]):
-        assign *= -1
+    assign = literal
     if(not value):
         assign *= -1
     result_assignment.append(assign)
@@ -38,15 +36,14 @@ def assign(literal, value, cnf, assignment):
 
     # Remove literals from cnf
     for clause in result_cnf.copy():
-        for otherliteral in clause.copy():
-            if otherliteral[0] == literal[0]:
-                if((otherliteral[1] == literal[1]) == value):
-                    # literal becomes true; clause disappears
-                    result_cnf.remove(clause)
-                    break
-                else:
-                    # literal becomes false; literal is removed
-                    clause.remove(otherliteral)
+        if((literal in clause and value) 
+        or (-literal in clause and not value)):
+            # literal becomes true; clause disappears
+            result_cnf.remove(clause)
+        else:
+            # literal becomes false; literal is removed
+            clause.pop(literal, None)
+            clause.pop(-literal, None)
 
     return result_cnf, result_assignment
 
@@ -62,7 +59,7 @@ def removeUnitClause(cnf, assignment):
                 loop = True
                 change = True
 
-                cnf, assignment = assign(clause[0], True, cnf, assignment)
+                cnf, assignment = assign(list(clause.keys())[0], True, cnf, assignment)
                 break
             
     return cnf, assignment, change
@@ -78,7 +75,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
 
     # take 1st literal
-    literal = cnf[0][0]
+    literal = list(cnf[0].keys())[0]
     return assign(literal, value, cnf, assignment)
 
 def DP(cnf, assignment = []):
@@ -116,8 +113,6 @@ def DP(cnf, assignment = []):
         # or didn't work; then try False
         else:
             return DP(*split(False, cnf, assignment))
-    
-    
 
 def solve(cnf):
     global DPcalls, splits
@@ -127,7 +122,7 @@ def solve(cnf):
     cnf = removeTautology(cnf)
     assignment = DP(cnf)
 
-    print("Satisfiable:", len(assignment) > 0,"DP calls:", DPcalls, "splits:", splits)
+    # print("Satisfiable:", len(assignment) > 0,"DP calls:", DPcalls, "splits:", splits)
     return assignment
 
 def main():
@@ -142,7 +137,17 @@ def main():
 
     cnf = load_cnf(filename)
     assignment = solve(cnf)
-    print(assignment)
+    
+    sudoku_solution = [a for a in assignment if a > 0]
+    print(sudoku_solution)
+    print(len(sudoku_solution))
+    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
+    for value in sudoku_solution:
+        v = [int(i) for i in str(value)]
+        print(v)
+        matrix[v[0] - 1][v[1] - 1] = v[2]
+    print(matrix)
+
 
 
 if __name__ == "__main__":

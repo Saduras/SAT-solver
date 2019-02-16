@@ -9,8 +9,8 @@ def load_cnf(path):
     """load a txt file into a DIMAC format.
     input:
         path: path to the file
-    return: list of list of tuples
-        [[(clause (type int), negation (type boolean))]]
+    return: list of default dictionaries
+        [{literal: True},{otherLiteral: True}]
     """
     with open(path, 'r') as f:
         dimacs = f.read()
@@ -21,8 +21,8 @@ def parse_cnf(dimacs):
     """parse a string in DIMAC format
     input:
         dimacs: string in DIMAC format
-    return: list of list of tuples
-        [[(clause (type int), negation (type boolean))]]
+    return: list of default dictionaries
+        [{literal: True},{otherLiteral: True}]
     """
     lines = dimacs.split('\n')
     
@@ -36,10 +36,9 @@ def parse_cnf(dimacs):
         
         #extracts all the clauses from one line
         clause_split = l.split(" ")[:-1] #the 0 in the end of the line is ignored.
-        clause = [] 
-        for c in clause_split:
-            #clause is loaded as a tuple of int and boolean
-            clause.append( (abs(int(c)), c[0] == '-') )
+        clause = {}
+        for literal in clause_split:
+            clause[int(literal)] = True
         
         cnf.append(clause)
 
