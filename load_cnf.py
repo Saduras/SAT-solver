@@ -30,7 +30,7 @@ def parse_cnf(dimacs):
     cnf = []
     
     for l in lines:
-        #excludes lines wihout clauses
+        #excludes lines without clauses
         if len(l) == 0 or "c" == l[0] or "p" == l[0]:
             continue
         
@@ -45,5 +45,5 @@ def parse_cnf(dimacs):
     return cnf
 
 if __name__ == "__main__":
-    cnf = load_cnf(".\data\sudoku-example-processed.txt")
+    cnf = load_cnf(r".\data\sudoku-example-processed.txt")
 

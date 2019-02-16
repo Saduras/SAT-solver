@@ -28,7 +28,7 @@ for idx,f in enumerate(onlyfiles):
 
     if(len(assignment) > 0):
         sat += 1
-        # check if number of postive assignments is 81 (one per sudoku field)
+        # check if number of positive assignments is 81 (one per sudoku field)
         if(len([a for a in assignment if a > 0]) != 81):
             sat_error +=1
     else:
