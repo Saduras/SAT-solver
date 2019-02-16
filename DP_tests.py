@@ -85,6 +85,15 @@ class DPTests(unittest.TestCase):
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
 
+    def test_removeUnitClause_copyClauses(self):
+        cnf = [[(123, True)],[(123, True)]]
+        assignment = []
+
+        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        self.assertEqual(new_cnf, [])
+        self.assertEqual(new_assignment, [-123])
+        self.assertEqual(change, True)
+
     def test_assign_oneOccurencePos(self):
         cnf = [[(123, False)]]
         assignment = []

@@ -51,13 +51,14 @@ def removeUnitClause(cnf, assignment):
     while loop:
         # stop looping if nothing changes this iteration
         loop = False
-        for clause in cnf.copy():
+        for clause in cnf:
             if len(clause) == 1:
                 # unit clause found; continue looping
                 loop = True
                 change = True
 
                 cnf, assignment = assign(clause[0], True, cnf, assignment)
+                break
             
     return cnf, assignment, change
 
@@ -103,10 +104,10 @@ def DP(cnf, assignment = []):
     if(done):
         return DP(cnf, assignment)
     else:
-        assignment = DP(*split(True, cnf, assignment))
+        solved_assignment = DP(*split(True, cnf, assignment))
         # split with True satisfied
-        if(len(assignment) != 0):
-            return assignment
+        if(len(solved_assignment) != 0):
+            return solved_assignment
         # or didn't work; then try False
         else:
             return DP(*split(False, cnf, assignment))
