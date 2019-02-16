@@ -1,6 +1,7 @@
 import unittest
 from collections import defaultdict
 from DP import removeTautology, removeUnitClause, assign, split, DP
+from heuristics import popular_literal
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -180,6 +181,14 @@ class DPTests(unittest.TestCase):
 
         assignment = DP(cnf)
         self.assertEqual(assignment, [123])
+        
+    def test_popularLiteral(self):
+        cnf = [{-123:True, -312:True, 423:True, 123:True},
+               {-123:True}]
+        
+        literal = popular_literal(cnf)
+        self.assertEqual(literal, -123)
+    
 
 if __name__ == '__main__':
     unittest.main()
