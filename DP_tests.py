@@ -1,5 +1,5 @@
 import unittest
-from DP import removeTautology, removeUnitClause, assign, split
+from DP import removeTautology, removeUnitClause, assign, split, DP
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -149,6 +149,18 @@ class DPTests(unittest.TestCase):
             split(True, cnf, assignment)
 
         self.assertTrue('Invalid CNF' in str(context.exception))
+
+    def test_DP_empty(self):
+        cnf = []
+
+        assignment = DP(cnf)
+        self.assertEqual(assignment, [])
+
+    def test_DP_tinyCase(self):
+        cnf = [[(123, False)]]
+
+        assignment = DP(cnf)
+        self.assertEqual(assignment, [123])
 
 
 if __name__ == '__main__':
