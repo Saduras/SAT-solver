@@ -1,4 +1,3 @@
-import copy
 import heuristics
 from time import time
 
@@ -45,7 +44,7 @@ def assign(literal, value, cnf, assignment):
         assign *= -1
     result_assignment.append(assign)
 
-    result_cnf = copy.deepcopy(cnf)
+    result_cnf = [clause.copy() for clause in cnf]
 
     # Remove literals from cnf
     for clause in result_cnf.copy():
