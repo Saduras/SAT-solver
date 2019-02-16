@@ -95,16 +95,34 @@ def DP(cnf, assignment = []):
     if(done):
         return DP(cnf, assignment)
     else:
-        assignment = DP(split(True, cnf, assignment))
+        assignment = DP(*split(True, cnf, assignment))
         # split with True satisfied
         if(len(assignment) != 0):
             return assignment
         # or didn't work; then try False
         else:
-            return DP(split(False, cnf, assignment))
+            return DP(*split(False, cnf, assignment))
     
     
 
 def solve(cnf):
     cnf = removeTautology(cnf)
     return DP(cnf)
+
+def main():
+    from load_cnf import load_cnf
+    import sys
+
+    if(len(sys.argv) != 2):
+        print("Missing arguments! Expecting 'DIMACS file path'")
+        exit()
+
+    filename = sys.argv[1]
+
+    cnf = load_cnf(filename)
+    assignment = solve(cnf)
+    print(assignment)
+
+
+if __name__ == "__main__":
+    main()
