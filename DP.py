@@ -1,8 +1,15 @@
 import copy
 import heuristics
+from time import time
 
+DEBUG = True
 DPcalls = 0
-splits = 0
+splitCalls = 0
+splitTime = 0
+assignCalls = 0
+assignTime = 0
+unitClauseCalls = 0
+unitClauseTime = 0
 
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
@@ -26,6 +33,11 @@ def removeTautology(cnf):
     return cnf
 
 def assign(literal, value, cnf, assignment):
+    if(DEBUG):
+        global assignCalls, assignTime
+        assignCalls += 1
+        startTime = time()
+
     # Add to assignment
     result_assignment = assignment.copy()
     assign = literal
@@ -46,9 +58,16 @@ def assign(literal, value, cnf, assignment):
             clause.pop(literal, None)
             clause.pop(-literal, None)
 
+    if(DEBUG):
+        assignTime += time() - startTime
     return result_cnf, result_assignment
 
 def removeUnitClause(cnf, assignment):
+    if(DEBUG):
+        global unitClauseCalls, unitClauseTime
+        unitClauseCalls += 1
+        startTime = time()
+
     change = False
     loop = True
     while loop:
@@ -62,21 +81,29 @@ def removeUnitClause(cnf, assignment):
 
                 cnf, assignment = assign(list(clause.keys())[0], True, cnf, assignment)
                 break
-            
+
+    if(DEBUG):
+        unitClauseTime += time() - startTime
     return cnf, assignment, change
 
 def removePureLiteral(cnf, assignment):
-    # TODO: consider removing or optimising
+    # TODO: consider removing or optimizing
     return cnf, assignment, False
 
 def split(value, cnf, assignment):
-    global splits
-    splits += 1
+    if(DEBUG):
+        global splitCalls, splitTime
+        splitCalls += 1
+        startTime = time()
+
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
 
     # take 1st literal
     literal = list(cnf[0].keys())[0]
+
+    if(DEBUG):
+        splitTime = time() - startTime
     return assign(literal, value, cnf, assignment)
 
 def DP(cnf, assignment = []):
@@ -89,8 +116,9 @@ def DP(cnf, assignment = []):
         If satisfiable: list of assignments for solution
         else: empty list
     """
-    global DPcalls
-    DPcalls += 1
+    if(DEBUG):
+        global DPcalls
+        DPcalls += 1
 
     # success condition: empty set of clauses
     if(len(cnf) == 0):
@@ -116,14 +144,28 @@ def DP(cnf, assignment = []):
             return DP(*split(False, cnf, assignment))
 
 def solve(cnf):
-    global DPcalls, splits
-    DPcalls = 0
-    splits = 0
+    if(DEBUG):
+        global DPcalls, assignCalls, assignTime, unitClauseCalls, unitClauseTime, splitCalls, splitTime
+        DPcalls = 0
+        splitCalls = 0
+        splitTime = 0
+        assignCalls = 0
+        assignTime = 0
+        unitClauseCalls = 0
+        unitClauseTime = 0
 
     cnf = removeTautology(cnf)
     assignment = DP(cnf)
 
-    # print("Satisfiable:", len(assignment) > 0,"DP calls:", DPcalls, "splits:", splits)
+    if(DEBUG):
+        print("Satisfiable:", len(assignment) > 0)
+        print(f"DP calls {DPcalls}")
+        if(assignCalls > 0):
+            print(f"assign calls: {assignCalls} total time: {assignTime:.2f}s avg time: {assignTime/assignCalls * 1000:.3f}ms")
+        if(unitClauseCalls > 0):
+            print(f"unitClause calls: {unitClauseCalls} total time: {unitClauseTime:.2f}s avg time: {unitClauseTime/unitClauseCalls * 1000:.3f}ms")
+        if(splitCalls > 0):
+            print(f"split calls: {splitCalls} total time: {splitTime:.2f}s avg time: {splitTime/splitCalls * 1000:.3f}ms")
     return assignment
 
 def main():
