@@ -1,4 +1,5 @@
 import copy
+import heuristics
 
 DPcalls = 0
 splits = 0
