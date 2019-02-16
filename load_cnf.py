@@ -12,18 +12,26 @@ def load_cnf(path):
     return: list of list of tuples
         [[(clause (type int), negation (type boolean))]]
     """
-    
-    #load file
     with open(path, 'r') as f:
-        lines = f.readlines()
+        dimacs = f.read()
+
+    return parse_cnf(dimacs)
+
+def parse_cnf(dimacs):
+    """parse a string in DIMAC format
+    input:
+        dimacs: string in DIMAC format
+    return: list of list of tuples
+        [[(clause (type int), negation (type boolean))]]
+    """
+    lines = dimacs.split('\n')
     
     #cnf is stored in a list.
     cnf = []
     
     for l in lines:
-        
         #excludes lines wihout clauses
-        if "c" == l[0] or "p" == l[0]:
+        if len(l) == 0 or "c" == l[0] or "p" == l[0]:
             continue
         
         #extracts all the clauses from one line
