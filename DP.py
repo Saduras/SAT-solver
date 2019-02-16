@@ -62,9 +62,13 @@ def removePureLiteral(cnf, assignment):
     # TODO: consider removing or optimising
     return cnf, assignment, False
 
-def split(cnf, assignment):
-    # TODO
-    return cnf, assignment
+def split(value, cnf, assignment):
+    if(len(cnf) == 0 or len(cnf[0]) == 0):
+        raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
+
+    # take 1st literal
+    literal = cnf[0][0]
+    return assign(literal, value, cnf, assignment)
 
 def DP(cnf, assignment = []):
     """
@@ -88,10 +92,18 @@ def DP(cnf, assignment = []):
     cnf, assignment, done = removeUnitClause(cnf, assignment)
     if(not done):
         cnf, assignment, done = removePureLiteral(cnf, assignment)
-    if(not done):
-        cnf, assignment = split(cnf, assignment)
+    if(done):
+        return DP(cnf, assignment)
+    else:
+        assignment = DP(split(True, cnf, assignment))
+        # split with True satisfied
+        if(len(assignment) != 0):
+            return assignment
+        # or didn't work; then try False
+        else:
+            return DP(split(False, cnf, assignment))
     
-    DP(cnf, assignment)
+    
 
 def solve(cnf):
     cnf = removeTautology(cnf)

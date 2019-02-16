@@ -1,5 +1,5 @@
 import unittest
-from DP import removeTautology, removeUnitClause, assign
+from DP import removeTautology, removeUnitClause, assign, split
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -116,6 +116,39 @@ class DPTests(unittest.TestCase):
         new_cnf, new_assignment = assign((123,False), True, cnf, assignment)
         self.assertEqual(new_cnf, [ [], [(234, True)] ])
         self.assertEqual(new_assignment, [123])
+
+    def test_split_oneClausePos(self):
+        cnf = [[(123, False)]]
+        assignment = []
+
+        new_cnf, new_assignment = split(True, cnf, assignment)
+        self.assertEqual(new_cnf, [])
+        self.assertEqual(new_assignment, [123])
+
+    def test_split_oneClauseNeg(self):
+        cnf = [[(123, False)]]
+        assignment = []
+
+        new_cnf, new_assignment = split(False, cnf, assignment)
+        self.assertEqual(new_cnf, [[]])
+        self.assertEqual(new_assignment, [-123])
+
+    def test_split_multiClause(self):
+        cnf = [[(123, False)], [(234, False)]]
+        assignment = []
+
+        new_cnf, new_assignment = split(True, cnf, assignment)
+        self.assertEqual(new_cnf, [[(234, False)]])
+        self.assertEqual(new_assignment, [123])
+
+    def test_split_empty(self):
+        cnf = []
+        assignment = []
+
+        with self.assertRaises(Exception) as context:
+            split(True, cnf, assignment)
+
+        self.assertTrue('Invalid CNF' in str(context.exception))
 
 
 if __name__ == '__main__':
