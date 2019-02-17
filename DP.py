@@ -1,4 +1,4 @@
-import heuristics
+from heuristics import popularLiteral
 from time import time
 
 DEBUG = True
@@ -190,7 +190,24 @@ def main():
         matrix[v[0] - 1][v[1] - 1] = v[2]
     print(matrix)
 
-
+def alternative_main():
+    from load_cnf import load_cnf
+    
+    filename = ".\\data\\sudoku-example-processed.txt"
+    cnf = load_cnf(filename)
+    assignment = solve(cnf)
+    
+    #print sudoku in a human readible way
+    sudoku_solution = [a for a in assignment if a > 0]
+    #print(sudoku_solution)
+    print(len(sudoku_solution))
+    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
+    for value in sudoku_solution:
+        v = [int(i) for i in str(value)]
+        #print(v)
+        matrix[v[0] - 1][v[1] - 1] = v[2]
+    print(matrix)
+    
 
 if __name__ == "__main__":
-    main()
+    alternative_main()
