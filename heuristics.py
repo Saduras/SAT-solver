@@ -5,7 +5,7 @@ Created on Sat Feb 16 17:04:17 2019
 @author: Victor Zuanazzi
 """
 
-def popular_literal(cnf):
+def popularLiteral(cnf):
     """returns the literal that appears in most clauses
     """
     
