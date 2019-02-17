@@ -106,3 +106,7 @@ venv.bak/
 \.vscode/settings\.json
 
 \.vscode/
+
+*.xml
+
+\.idea/SAT-solver\.iml
