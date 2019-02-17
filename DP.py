@@ -1,4 +1,4 @@
-from heuristics import popularLiteral
+from heuristics import DLIS, BOHM, randomChoice, nextLiteral
 from time import time
 
 DEBUG = True
@@ -89,6 +89,37 @@ def removePureLiteral(cnf, assignment):
     # TODO: consider removing or optimizing
     return cnf, assignment, False
 
+def choseLiteral(cnf, choice = "next"):
+    """choose literal and it's assigned value based on heuristics
+    input: 
+        cnf: the cnf in the standard format
+        choice: the name of the heuristic to be executed.
+            "random", "DLIS", "BOHM", "next"
+    output: 
+        literal key,
+        value for the assigment.
+    """
+    
+    #naive implementation:
+    if choice == "random":
+        return randomChoice(cnf) #not working
+    elif choice == "DLIS":
+        return DLIS(cnf) #takes much more time than nextLiteral
+    elif choice == "BOHM":
+        return BOHM(cnf)
+    else:
+        return nextLiteral(cnf)
+     
+    #efficient implementation (not working)
+#    heuristics = {
+#            "DLIS": DLIS(cnf),
+#            "BOHM": BOHM(cnf),
+#            "random": randomChoice(cnf),
+#            "next": nextLiteral(cnf)
+#            }
+    
+#    return heuristics.get(choice, nextLiteral(cnf))
+    
 def split(value, cnf, assignment):
     if(DEBUG):
         global splitCalls, splitTime
@@ -99,7 +130,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
 
     # take 1st literal
-    literal = list(cnf[0].keys())[0]
+    literal, _ = choseLiteral(cnf)
 
     if(DEBUG):
         splitTime = time() - startTime
@@ -197,7 +228,7 @@ def alternative_main():
     cnf = load_cnf(filename)
     assignment = solve(cnf)
     
-    #print sudoku in a human readible way
+    #print sudoku in a (almost) human readible way
     sudoku_solution = [a for a in assignment if a > 0]
     #print(sudoku_solution)
     print(len(sudoku_solution))
