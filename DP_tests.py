@@ -1,7 +1,7 @@
 import unittest
 from collections import defaultdict
 from DP import removeTautology, removeUnitClause, assign, split, DP
-from heuristics import popularLiteral
+from heuristics import DLIS, BOHM, nextLiteral, randomChoice
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -182,12 +182,27 @@ class DPTests(unittest.TestCase):
         assignment = DP(cnf)
         self.assertEqual(assignment, [123])
         
-    def test_popularLiteral(self):
+    def test_DLIS(self):
         cnf = [{-123:True, -312:True, 423:True, 123:True},
                {-123:True}]
         
-        literal = popularLiteral(cnf)
-        self.assertEqual(literal, -123)
+        literal = DLIS(cnf)
+        self.assertEqual(literal, (-123, True))
+    
+    def test_BOHM(self):
+        cnf = [{-123:True, -312:True, 423:True, 123:True},
+               {-123:True}]
+        
+        literal = DLIS(cnf)
+        self.assertEqual(literal, (-123, True))
+        
+    def test_nextLiteral(self):
+        cnf = [{-123:True, -312:True, 423:True, 123:True},
+               {-123:True}]
+        
+        literal = nextLiteral(cnf)
+        self.assertEqual(literal, (-123, True))
+        
     
 
 if __name__ == '__main__':
