@@ -1,7 +1,10 @@
 from heuristics import DLIS, BOHM, randomChoice, nextLiteral
 from time import time
+import numpy as np
+import pandas as pd
 
 DEBUG = True
+SAVE_SPLIT = True
 DPcalls = 0
 splitCalls = 0
 splitTime = 0
@@ -102,13 +105,13 @@ def choseLiteral(cnf, choice = "next"):
     
     #naive implementation:
     if choice == "random":
-        return randomChoice(cnf) #not working
-    elif choice == "DLIS":
-        return DLIS(cnf) #takes much more time than nextLiteral
-    elif choice == "BOHM":
+        return randomChoice(cnf) 
+    elif choice == "DLIS": # worst choice for split and time
+        return DLIS(cnf) 
+    elif choice == "BOHM": #best choice for split
         return BOHM(cnf)
     else:
-        return nextLiteral(cnf)
+        return nextLiteral(cnf) #best choice for time
      
     #efficient implementation (not working)
 #    heuristics = {
@@ -120,6 +123,27 @@ def choseLiteral(cnf, choice = "next"):
     
 #    return heuristics.get(choice, nextLiteral(cnf))
     
+def saveSplit(cnf):
+    """save all splits in a .csv
+    """
+    path = './data/Splits.csv'
+    
+    clauses = np.zeros((12006,9))
+    
+    #can we vectorize this?
+    for c, clause in enumerate(cnf):
+        for l, literal in enumerate(clause):
+           clauses[c][l] = literal
+           
+    #3d dataframe, each split is saved as a matrix of clauses
+    df = pd.DataFrame(zip(clauses))
+    
+    try:
+        df.to_csv(path_or_buf = path, mode = 'a', header = False)
+    except:
+        pass
+
+    
 def split(value, cnf, assignment):
     if(DEBUG):
         global splitCalls, splitTime
@@ -128,10 +152,13 @@ def split(value, cnf, assignment):
 
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
-
+        
     # take 1st literal
-    literal, _ = choseLiteral(cnf)
-
+    literal, _ = choseLiteral(cnf, "next")
+    
+    if SAVE_SPLIT:
+        saveSplit(cnf)   
+        
     if(DEBUG):
         splitTime = time() - startTime
     return assign(literal, value, cnf, assignment)
@@ -227,6 +254,7 @@ def alternative_main():
     filename = ".\\data\\sudoku-example-processed.txt"
     cnf = load_cnf(filename)
     assignment = solve(cnf)
+    
     
     #print sudoku in a (almost) human readible way
     sudoku_solution = [a for a in assignment if a > 0]
