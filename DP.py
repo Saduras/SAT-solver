@@ -128,14 +128,16 @@ def saveSplit(cnf):
     """
     path = './data/Splits.csv'
     
-    clauses = np.zeros((12006,9))
+    #enough space for all the clauses and literals
+    clauses = np.zeros((12006,10))
     
-    #can we vectorize this?
     for c, clause in enumerate(cnf):
         for l, literal in enumerate(clause):
            clauses[c][l] = literal
+          
+    #clauses are speareted by at least one zero
+    clauses = np.reshape(clauses, (1,12006*10))
            
-    #3d dataframe, each split is saved as a matrix of clauses
     df = pd.DataFrame(zip(clauses))
     
     try:
@@ -199,7 +201,25 @@ def DP(cnf, assignment = []):
         # or didn't work; then try False
         else:
             return DP(*split(False, cnf, assignment))
+        
+def saveLabel(assignment, n_splits):
+    """save the finished sudoku in a .csv
+    """
+    
+    sudoku_solution = [a for a in assignment if a > 0]
+    
+    
+    label = np.reshape(np.array(sudoku_solution*n_splits), 
+                       (n_splits, len(sudoku_solution)))
 
+    df = pd.DataFrame(zip(label))
+    
+    path = './data/SplitsLabel.csv'
+    try:
+        df.to_csv(path_or_buf = path, mode = 'a', header = False)
+    except:
+        pass
+    
 def solve(cnf):
     if(DEBUG):
         global DPcalls, assignCalls, assignTime, unitClauseCalls, unitClauseTime, splitCalls, splitTime
@@ -213,6 +233,9 @@ def solve(cnf):
 
     cnf = removeTautology(cnf)
     assignment = DP(cnf)
+    
+    if SAVE_SPLIT:
+        saveLabel(assignment, splitCalls)
 
     if(DEBUG):
         print("Satisfiable:", len(assignment) > 0)
@@ -247,6 +270,8 @@ def main():
         print(v)
         matrix[v[0] - 1][v[1] - 1] = v[2]
     print(matrix)
+    
+
 
 def alternative_main():
     from load_cnf import load_cnf
