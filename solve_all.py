@@ -27,7 +27,6 @@ for idx,f in enumerate(onlyfiles):
     cnf = parse_cnf(dimacs)
 
     assignment = solve(cnf)
-    print(assignment)
 
     if(len(assignment) > 0):
         sat += 1
