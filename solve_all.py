@@ -7,6 +7,8 @@ from time import time
 sat = 0
 sat_error = 0
 unsat = 0
+save = True
+stop_at = 0
 
 # load rules
 rule_path = './data/sudoku-rules.txt'
@@ -25,6 +27,7 @@ for idx,f in enumerate(onlyfiles):
     cnf = parse_cnf(dimacs)
 
     assignment = solve(cnf)
+    print(assignment)
 
     if(len(assignment) > 0):
         sat += 1
@@ -34,5 +37,15 @@ for idx,f in enumerate(onlyfiles):
     else:
         unsat += 1
     print("Solved",f,idx+1,"/",len(onlyfiles)," - sat:", sat, "sat_error:", sat_error, "unsat:", unsat, "time:", (time()-start) * 1000,"ms")
-
+    
+    #save the finished sudoku
+    if save:
+        save_path = './data/solved_sudoku/'
+        s_name = f.split("/")[-1] + "_solved.txt"
+        with open(save_path + s_name, "w+") as file:
+            file.writelines("%s\n" % x for x in assignment)
+            
+    if stop_at and (idx >= stop_at):
+        break
+    
 print("Results - sat:", sat, "sat_error:", sat_error, "unsat:", unsat)
