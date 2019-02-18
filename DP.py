@@ -2,6 +2,8 @@ from heuristics import DLIS, BOHM, randomChoice, nextLiteral
 from time import time
 import numpy as np
 import pandas as pd
+import csv
+
 
 DEBUG = True
 SAVE_SPLIT = True
@@ -126,20 +128,24 @@ def choseLiteral(cnf, choice = "next"):
 def saveSplit(cnf):
     """save all splits in a .csv
     """
-    path = './data/Splits.csv'
+    
     
     #enough space for all the clauses and literals
     clauses = np.zeros((12006,10))
     
+    df = pd.DataFrame(columns = ["clauses"])
+    df = df.append(pd.Series(data = {"clauses": [None]}),
+                   ignore_index = True)
+    
+    #vector implementation if this ugly thing?
     for c, clause in enumerate(cnf):
         for l, literal in enumerate(clause):
            clauses[c][l] = literal
-          
-    #clauses are speareted by at least one zero
-    clauses = np.reshape(clauses, (1,12006*10))
-           
-    df = pd.DataFrame(zip(clauses))
+         
+    #df = pd.DataFrame(zip(clauses), columns = ["clauses"])
+    df.loc[0, "clauses"] = [int(clauses[i][j]) for i in range(len(clauses)) for j in range(len(clauses[i])) ] #np.reshape(clauses, (1,12006*10))
     
+    path = './data/Splits.csv'
     try:
         df.to_csv(path_or_buf = path, mode = 'a', header = False)
     except:
@@ -208,7 +214,8 @@ def saveLabel(assignment, n_splits):
     
     sudoku_solution = [a for a in assignment if a > 0]
     
-    
+    sudoku_solution.sort()
+     
     label = np.reshape(np.array(sudoku_solution*n_splits), 
                        (n_splits, len(sudoku_solution)))
 
@@ -216,7 +223,9 @@ def saveLabel(assignment, n_splits):
     
     path = './data/SplitsLabel.csv'
     try:
-        df.to_csv(path_or_buf = path, mode = 'a', header = False)
+        df.to_csv(path_or_buf = path, 
+                  mode = 'a',
+                  header = False)
     except:
         pass
     
