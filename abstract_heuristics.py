@@ -169,6 +169,8 @@ def main():
     
     df_x, df_y = loadData()
     results, MOD = trainModel(model, df_x, df_y)
+    print("results: ", results)
+    print("Model: ", MOD)
            
             
 if __name__ == "__main__":
