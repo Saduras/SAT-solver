@@ -133,7 +133,8 @@ def saveSplit(cnf):
     #enough space for all the clauses and literals
     clauses = np.zeros((12006,10))
     
-    df = pd.DataFrame(columns = ["clauses"])
+    
+    df = pd.DataFrame(columns = ["clauses"])# <--- [0:12006] may solve the problem
     df = df.append(pd.Series(data = {"clauses": [None]}),
                    ignore_index = True)
     
