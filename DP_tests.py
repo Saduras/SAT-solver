@@ -182,14 +182,19 @@ class DPTests(unittest.TestCase):
         assignment = DP(cnf)
         self.assertEqual(assignment, [123])
         
-    def test_DLIS(self):
-        cnf = [{-123:True, -312:True, 423:True, 123:True},
-               {-123:True}]
+    def test_DLIS_trivial(self):
+        cnf = [{-123:True}]
         
         literal = DLIS(cnf)
         self.assertEqual(literal, (-123, True))
     
-    def test_BOHM(self):
+    def test_DLIS_tie(self):
+        cnf = [{-123:True, 234:True}]
+        
+        literal = DLIS(cnf)
+        self.assertEqual(literal, (-123, True))
+
+    def test_DLIS_twoClause(self):
         cnf = [{-123:True, -312:True, 423:True, 123:True},
                {-123:True}]
         
