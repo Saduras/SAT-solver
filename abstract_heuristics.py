@@ -90,46 +90,52 @@ def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):
     """  
     #if everything works fine, the ith line of df_y is the label for the ith 
     #line of df_x
-    df = pd.read_csv(filepath_or_buffer = path_x,
+#    df = pd.read_csv(filepath_or_buffer = path_x,
+#                       header = None, 
+#                       names = ["i", "clauses"]) 
+#    
+#    #it is sad that I have to do that!
+#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("[", ""))
+#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("]", ""))
+#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("\n", ""))
+#    df["clauses"] = df["clauses"].apply(lambda x: x.replace(",", ""))
+#    df["clauses"] = df["clauses"].apply(lambda x: x.split(" "))
+#    df["clauses"] = df["clauses"].apply(lambda x: np.array([int(i) for i in x]))
+#    
+    df_x = pd.read_csv(filepath_or_buffer = path_x,
                        header = None, 
-                       names = ["i", "clauses"]) 
+                       names =  [x for x in range(120060)]) 
     
-    #it is sad that I have to do that!
-    df["clauses"] = df["clauses"].apply(lambda x: x.replace("[", ""))
-    df["clauses"] = df["clauses"].apply(lambda x: x.replace("]", ""))
-    df["clauses"] = df["clauses"].apply(lambda x: x.replace("\n", ""))
-    df["clauses"] = df["clauses"].apply(lambda x: x.replace(",", ""))
-    df["clauses"] = df["clauses"].apply(lambda x: x.split(" "))
-    df["clauses"] = df["clauses"].apply(lambda x: np.array([int(i) for i in x]))
+#    cols = [x for x in range(120060)]
+#    df_x = pd.DataFrame(columns = cols)
+#    
+#    for i in range(len(df)):   
+#        df_x = df_x.append(pd.Series(data = {k: df["clauses"][i][k] for k in cols}),
+#                           ignore_index = True)
     
-    cols = [x for x in range(120060)]
-    df_x = pd.DataFrame(columns = cols)
-    
-    for i in range(len(df)):   
-        df_x = df_x.append(pd.Series(data = {k: df["clauses"][i][k] for k in cols}),
-                           ignore_index = True)
-    
-    df = pd.read_csv(filepath_or_buffer = path_y,
+#    df = pd.read_csv(filepath_or_buffer = path_y,
+#                       header = None, 
+#                       names = ["i", "label"]) 
+#    
+#    df_x.astype("int")
+#    
+#    #it is sad that I have to do that!
+#    df["label"] = df["label"].apply(lambda x: x.replace("[", ""))
+#    df["label"] = df["label"].apply(lambda x: x.replace("]", ""))
+#    df["label"] = df["label"].apply(lambda x: x.replace("\n", ""))
+#    df["label"] = df["label"].apply(lambda x: x.replace(",", ""))
+#    df["label"] = df["label"].apply(lambda x: x.split(" "))
+#    df["label"] = df["label"].apply(lambda x: [int(i) for i in x])
+#    
+#    cols = [y for y in range(81)]
+#    df_y = pd.DataFrame(columns = cols)
+#    
+#    for i in range(len(df)):   
+#        df_y = df_y.append(pd.Series(data = {k: df["label"][i][k] for k in cols}),
+#                           ignore_index = True)
+    df_y = pd.read_csv(filepath_or_buffer = path_y,
                        header = None, 
-                       names = ["i", "label"]) 
-    
-    df_x.astype("int")
-    
-    #it is sad that I have to do that!
-    df["label"] = df["label"].apply(lambda x: x.replace("[", ""))
-    df["label"] = df["label"].apply(lambda x: x.replace("]", ""))
-    df["label"] = df["label"].apply(lambda x: x.replace("\n", ""))
-    df["label"] = df["label"].apply(lambda x: x.replace(",", ""))
-    df["label"] = df["label"].apply(lambda x: x.split(" "))
-    df["label"] = df["label"].apply(lambda x: [int(i) for i in x])
-    
-    cols = [y for y in range(81)]
-    df_y = pd.DataFrame(columns = cols)
-    
-    for i in range(len(df)):   
-        df_y = df_y.append(pd.Series(data = {k: df["label"][i][k] for k in cols}),
-                           ignore_index = True)
-    
+                       names =  [x for x in range(81)]) 
     df_y.astype("int")
     
     #sanety check:
@@ -145,7 +151,7 @@ def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):
 def dataSplit(df_x, df_y):
     """split data into test and train """
     x_train, x_test, y_train, y_test = train_test_split(df_x, 
-                                                        df_y[0], 
+                                                        df_y, 
                                                         test_size = 0.2, 
                                                         random_state = 42)
     
@@ -153,7 +159,7 @@ def dataSplit(df_x, df_y):
 
 def trainModel(model, df_x, df_y):
     
-    x_train, x_test, y_train, y_test = dataSplit(df_x, df_y)
+    x_train, x_test, y_train, y_test = dataSplit(df_x, df_y[0])
                                        
     results, y_test_pred_class, y_test_pred_prob, MOD = runLearningModel(x_train,
                                                                          x_test,

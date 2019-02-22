@@ -130,24 +130,20 @@ def choseLiteral(cnf, choice = "next"):
 def saveSplit(cnf):
     """save all splits in a .csv
     """
+ 
+    #The clauses are appended next to each other with zeros in between clauses.
+    clauses = np.zeros((12006,10)) 
     
-    
-    #enough space for all the clauses and literals
-    clauses = np.zeros((12006,10))
-    
-    
-    df = pd.DataFrame(columns = ["clauses"])# <--- [0:12006] may solve the problem
-    df = df.append(pd.Series(data = {"clauses": [None]}),
-                   ignore_index = True)
-    
-    #vector implementation if this ugly thing?
     for c, clause in enumerate(cnf):
         for l, literal in enumerate(clause):
-           clauses[c][l] = literal
-         
-    #df = pd.DataFrame(zip(clauses), columns = ["clauses"])
-    df.loc[0, "clauses"] = [int(clauses[i][j]) for i in range(len(clauses)) for j in range(len(clauses[i])) ] #np.reshape(clauses, (1,12006*10))
+           clauses[c][l] = literal 
+           
+    clauses = np.reshape(clauses, (1, 12006*10))
     
+    #creates a dataframe with only one line.
+    df = pd.DataFrame(data = clauses, columns = [x for x in range(120060)])
+    
+    #the dataframe is anexed to the bottom of Splits.csv
     path = './data/Splits.csv'
     try:
         df.to_csv(path_or_buf = path, mode = 'a', header = False)
@@ -165,7 +161,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
         
     # take 1st literal
-    literal, _ = choseLiteral(cnf, "paretoDominant")
+    literal, _ = choseLiteral(cnf, "DLIS")
     
     if SAVE_SPLIT:
         saveSplit(cnf)   
@@ -222,7 +218,7 @@ def saveLabel(assignment, n_splits):
     label = np.reshape(np.array(sudoku_solution*n_splits), 
                        (n_splits, len(sudoku_solution)))
 
-    df = pd.DataFrame(zip(label))
+    df = pd.DataFrame(label, columns = [x for x in range(len(sudoku_solution))])
     
     path = './data/SplitsLabel.csv'
     try:
