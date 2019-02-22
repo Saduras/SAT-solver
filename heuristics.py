@@ -85,6 +85,60 @@ def BOHM(cnf):
     
     return bohms_favorite, value
 
+def paretoDominant(cnf):
+    """satisfy or reduce size of many preferably short clauses, based on BOHM.
+   """
+    #store the score of each literal
+    literal_score = {}
+    
+    #dictionary that stores the clauses indexed in their length
+    len_clauses = {}
+    
+    #hyperparameters suggested to be set to those values
+    alpha = 1
+    beta = 2
+    
+    #makes the dictionary that stores the clauses indexed in their length
+    for clause in cnf:
+        if len_clauses.get(len(clause), True):
+            len_clauses[len(clause)] = []
+        len_clauses[len(clause)].append(clause)                
+    
+    #Loop over all literals
+    for clause in cnf:
+        for literal in clause:
+            
+            #negative literals are evaluated together with positive literals
+            if literal < 0: 
+                continue
+
+            vector = []
+            
+            #Loop over all length of clauses:
+            for lc in len_clauses:
+                pos_count = 0
+                neg_count = 0
+                
+                #for every literal in the every clause, check if it is the 
+                #same as the literal of interest
+                for c in len_clauses[lc]:
+                    for lit in c:
+                        if lit == literal:
+                            pos_count += 1
+                        if lit == -literal:
+                            neg_count += 1
+                            
+                vector.append(alpha*max(pos_count, neg_count) + 
+                         beta*min(pos_count, neg_count))
+            
+            #unsure of implementation
+            literal_score[literal] = np.linalg.norm(np.array(vector))
+    
+    #returns the literal that is not dominated by any other. 
+    bohms_favorite =  max(literal_score, key=lambda key: literal_score[key])
+    value = True 
+    
+    return bohms_favorite, value
 
         
     

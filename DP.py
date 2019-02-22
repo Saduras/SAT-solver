@@ -1,4 +1,4 @@
-from heuristics import DLIS, BOHM, randomChoice, nextLiteral
+from heuristics import DLIS, BOHM, randomChoice, nextLiteral, paretoDominant
 from time import time
 import numpy as np
 import pandas as pd
@@ -112,6 +112,8 @@ def choseLiteral(cnf, choice = "next"):
         return DLIS(cnf) 
     elif choice == "BOHM": #best choice for split
         return BOHM(cnf)
+    elif choice == "paretoDominant":
+        return paretoDominant(cnf)
     else:
         return nextLiteral(cnf) #best choice for time
      
@@ -163,7 +165,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
         
     # take 1st literal
-    literal, _ = choseLiteral(cnf, "next")
+    literal, _ = choseLiteral(cnf, "paretoDominant")
     
     if SAVE_SPLIT:
         saveSplit(cnf)   
