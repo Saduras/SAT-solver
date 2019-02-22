@@ -133,18 +133,25 @@ def choseLiteral(cnf, choice = "next"):
 def saveSplit(cnf):
     """save all splits in a .csv
     """
- 
-    #The clauses are appended next to each other with zeros in between clauses.
-    clauses = np.zeros((12006,10)) 
+    #TO-DO: find a more compact feature representation.
+        
+    #feature size reduced for memory sake...
+    num_clauses = 100
+    l_per_clause = 4
     
-    for c, clause in enumerate(cnf):
-        for l, literal in enumerate(clause):
+    #The clauses are appended next to each other with zeros in between clauses.
+    clauses = np.zeros((num_clauses,l_per_clause)) 
+    
+    for c, clause in enumerate(cnf[:num_clauses]):
+        for l, literal in enumerate(list(clause.keys())[:(l_per_clause-1)]):
            clauses[c][l] = literal 
            
-    clauses = np.reshape(clauses, (1, 12006*10))
+    clauses = np.reshape(clauses, (1, num_clauses*l_per_clause))
     
     #creates a dataframe with only one line.
-    df = pd.DataFrame(data = clauses, columns = [x for x in range(120060)])
+    df = pd.DataFrame(data = clauses, 
+                      columns = [x for x in range(num_clauses*l_per_clause)], 
+                      dtype = "int_")
     
     #the dataframe is anexed to the bottom of Splits.csv
     path = './data/Splits.csv'
@@ -164,7 +171,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
         
     # take 1st literal
-    literal, _ = choseLiteral(cnf, choice = "smart")
+    literal, _ = choseLiteral(cnf, choice = "BOHM")
     
     if SAVE_SPLIT:
         saveSplit(cnf)   
