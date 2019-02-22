@@ -88,56 +88,25 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
 def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):  
     """
     """  
+    #TODO: some sodukus are not solved. check what the impact for df_y is.
+    
     #if everything works fine, the ith line of df_y is the label for the ith 
-    #line of df_x
-#    df = pd.read_csv(filepath_or_buffer = path_x,
-#                       header = None, 
-#                       names = ["i", "clauses"]) 
-#    
-#    #it is sad that I have to do that!
-#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("[", ""))
-#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("]", ""))
-#    df["clauses"] = df["clauses"].apply(lambda x: x.replace("\n", ""))
-#    df["clauses"] = df["clauses"].apply(lambda x: x.replace(",", ""))
-#    df["clauses"] = df["clauses"].apply(lambda x: x.split(" "))
-#    df["clauses"] = df["clauses"].apply(lambda x: np.array([int(i) for i in x]))
-#    
     df_x = pd.read_csv(filepath_or_buffer = path_x,
                        header = None, 
                        names =  [x for x in range(120060)]) 
     
-#    cols = [x for x in range(120060)]
-#    df_x = pd.DataFrame(columns = cols)
-#    
-#    for i in range(len(df)):   
-#        df_x = df_x.append(pd.Series(data = {k: df["clauses"][i][k] for k in cols}),
-#                           ignore_index = True)
-    
-#    df = pd.read_csv(filepath_or_buffer = path_y,
-#                       header = None, 
-#                       names = ["i", "label"]) 
-#    
-#    df_x.astype("int")
-#    
-#    #it is sad that I have to do that!
-#    df["label"] = df["label"].apply(lambda x: x.replace("[", ""))
-#    df["label"] = df["label"].apply(lambda x: x.replace("]", ""))
-#    df["label"] = df["label"].apply(lambda x: x.replace("\n", ""))
-#    df["label"] = df["label"].apply(lambda x: x.replace(",", ""))
-#    df["label"] = df["label"].apply(lambda x: x.split(" "))
-#    df["label"] = df["label"].apply(lambda x: [int(i) for i in x])
-#    
-#    cols = [y for y in range(81)]
-#    df_y = pd.DataFrame(columns = cols)
-#    
-#    for i in range(len(df)):   
-#        df_y = df_y.append(pd.Series(data = {k: df["label"][i][k] for k in cols}),
-#                           ignore_index = True)
     df_y = pd.read_csv(filepath_or_buffer = path_y,
                        header = None, 
                        names =  [x for x in range(81)]) 
-    df_y.astype("int")
     
+    #Excludes the sudokus that were not solved
+    nan_idx = df_y[1].index[df_y[1].apply(np.isnan)] #
+    df_y.drop(labels = nan_idx, axis = 0, inplace = True)
+    df_x.drop(labels = nan_idx, axis = 0, inplace = True)
+    
+    #Everything is an int.
+    df_y.astype("int")
+    df_x.astype("int")
     #sanety check:
     if len(df_x) < len(df_y):
         print(f"WARNING: possible missmatch between df_x: {len(df_x)} and df_y: {len(df_y)}")
@@ -167,7 +136,34 @@ def trainModel(model, df_x, df_y):
                                                                          y_test, 
                                                                          model, 
                                                                          log = False)
-    return results, MOD        
+    
+    # save the model to disk
+    filename = 'finalized_model.sav'
+    pickle.dump(MOD, open(filename, 'wb'))
+    
+    return results, MOD   
+
+def learnedHeuristic(cnf):  
+    #tranlates cnf to a array the model understands
+    
+    clauses = np.zeros((12006,10)) 
+    
+    for c, clause in enumerate(cnf):
+        for l, literal in enumerate(clause):
+           clauses[c][l] = literal 
+           
+    clauses = np.reshape(clauses, (1, 12006*10))
+    
+    filename = 'finalized_model.sav'
+    MOD = pickle.load(open(filename, 'rb'))
+    smart_literal = MOD.predict(clauses)
+    
+    if smart_literal[0] in list(cnf[0].keys()):
+        print("learned")
+        return smart_literal[0], True
+    else:
+        print("next instead")
+        return list(cnf[0].keys())[0], True
 
 def main():
     #models = ['RF', 'LOG', 'GAUSS', 'TREE', 'NN', 'SVM']
