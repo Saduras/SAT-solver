@@ -5,6 +5,8 @@ Created on Mon Feb 18 08:31:20 2019
 @author: Victor Zuanazzi
 """
 
+
+
 #base libaries
 import numpy as np
 import pandas as pd
@@ -51,6 +53,11 @@ from tqdm import tqdm
 tqdm.pandas()
 
 
+#feature size reduced for memory sake...
+NUM_CLAUSES = 100
+l_PER_CLAUSE = 4
+
+
 def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     if(model=="LOG"):
         MOD = linear_model.LogisticRegression()
@@ -62,7 +69,7 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
         MOD = MLPClassifier(hidden_layer_sizes=(5, 5),solver='sgd')
     if(model=="RF"): #Best Performer so far
         mf = np.array(x_train).shape[1]
-        MOD = RandomForestClassifier(max_features = mf, #original: 41, 
+        MOD = RandomForestClassifier(max_features = mf,  
                                    n_estimators = 10, 
                                    max_depth = 15, 
                                    min_samples_split = 3, 
@@ -72,13 +79,13 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
         MOD = svm.SVC(kernel = 'linear',probability=True, max_iter=1000)
         #max_iter = 1000 is a good number for a coffee
             
-    MOD.fit(x_train, y_train.astype("int"))
+    MOD.fit(x_train, y_train)
     y_pred_class = MOD.predict(x_test)
     y_pred_prob =  MOD.predict_proba(x_test)
     if log:
         print(model,"\n confusion matrix:")
         print(confusion_matrix(y_test.astype("int"), y_pred_class))
-    accuracy = accuracy_score(y_test.astype("int"), y_pred_class)
+    accuracy = 1 #accuracy_score(y_test.astype("int"), y_pred_class)
     precision = 1 # precision_score(y_test.astype("int"), y_pred_class, average = "samples")
     recall = 1 #recall_score(y_test.astype("int"), y_pred_class)
     
@@ -87,19 +94,24 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
 
 def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):  
     """
-    """  
-    #TODO: some sodukus are not solved. check what the impact for df_y is.
+    """      
+    #TO-DO: find a more compact feature representation.
     
     #if everything works fine, the ith line of df_y is the label for the ith 
+
+    
+    print('Loading data...', end='\r')    
     df_x = pd.read_csv(filepath_or_buffer = path_x,
                        header = None, 
-                       names =  [x for x in range(120060)]) 
+                       names =  [x for x in range(NUM_CLAUSES*l_PER_CLAUSE)]) 
     
+    print('Loading labels...', end='\r')
     df_y = pd.read_csv(filepath_or_buffer = path_y,
                        header = None, 
                        names =  [x for x in range(81)]) 
     
     #Excludes the sudokus that were not solved
+    print('Pre-processing...', end='\r')
     nan_idx = df_y[1].index[df_y[1].apply(np.isnan)] #
     df_y.drop(labels = nan_idx, axis = 0, inplace = True)
     df_x.drop(labels = nan_idx, axis = 0, inplace = True)
@@ -107,6 +119,8 @@ def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):
     #Everything is an int.
     df_y.astype("int")
     df_x.astype("int")
+    
+    print('Done!')
     #sanety check:
     if len(df_x) < len(df_y):
         print(f"WARNING: possible missmatch between df_x: {len(df_x)} and df_y: {len(df_y)}")
@@ -128,7 +142,7 @@ def dataSplit(df_x, df_y):
 
 def trainModel(model, df_x, df_y):
     
-    x_train, x_test, y_train, y_test = dataSplit(df_x, df_y[0])
+    x_train, x_test, y_train, y_test = dataSplit(df_x, df_y)
                                        
     results, y_test_pred_class, y_test_pred_prob, MOD = runLearningModel(x_train,
                                                                          x_test,
@@ -144,26 +158,29 @@ def trainModel(model, df_x, df_y):
     return results, MOD   
 
 def learnedHeuristic(cnf):  
-    #tranlates cnf to a array the model understands
+    """returns a literal by a learned heuristics
+    """
     
-    clauses = np.zeros((12006,10)) 
+    #tranlates cnf to a array the model understands    
+    clauses = np.zeros((NUM_CLAUSES, l_PER_CLAUSE)) 
     
-    for c, clause in enumerate(cnf):
-        for l, literal in enumerate(clause):
+    for c, clause in enumerate(cnf[NUM_CLAUSES]):
+        for l, literal in enumerate(list(clause.keys())[:(l_PER_CLAUSE-1)]):
            clauses[c][l] = literal 
            
-    clauses = np.reshape(clauses, (1, 12006*10))
+    clauses = np.reshape(clauses, (1, NUM_CLAUSES*l_PER_CLAUSE))
     
     filename = 'finalized_model.sav'
     MOD = pickle.load(open(filename, 'rb'))
     smart_literal = MOD.predict(clauses)
     
-    if smart_literal[0] in list(cnf[0].keys()):
-        print("learned")
-        return smart_literal[0], True
-    else:
-        print("next instead")
-        return list(cnf[0].keys())[0], True
+    for sl in smart_literal:
+        if sl in list(cnf[0].keys()):
+            print("learned")
+            return smart_literal[0], True
+        
+    print("next instead")
+    return list(cnf[0].keys())[0], True
 
 def main():
     #models = ['RF', 'LOG', 'GAUSS', 'TREE', 'NN', 'SVM']
