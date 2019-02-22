@@ -21,7 +21,7 @@ def randomChoice(cnf):
     return rand_lit, True
     
 
-def DLIS(cnf):
+def DLIS(cnf, take = "min"):
     """returns the literal that appears in most clauses
     """
     
@@ -31,7 +31,13 @@ def DLIS(cnf):
         for literal in clause:
             literal_count[literal] = literal_count.get(literal, 0) + 1
     
-    pop_literal = max(literal_count, key=lambda key: literal_count[key])
+    if take == "max":
+        #max performs terribly 
+        pop_literal = max(literal_count, key=lambda key: literal_count[key])
+    else:
+        #min performs better
+        pop_literal = min(literal_count, key=lambda key: literal_count[key])
+            
     value = True
         
     return pop_literal, value
@@ -63,7 +69,6 @@ def BOHM(cnf):
             len_lit_count[l][literal] += 1
             literals.add(literal)
 
-    
     literal_score = []
 
     #Loop over all literals
@@ -135,10 +140,10 @@ def paretoDominant(cnf):
             literal_score[literal] = np.linalg.norm(np.array(vector))
     
     #returns the literal that is not dominated by any other. 
-    bohms_favorite =  max(literal_score, key=lambda key: literal_score[key])
+    pareto =  max(literal_score, key=lambda key: literal_score[key])
     value = True 
     
-    return bohms_favorite, value
+    return pareto, value
 
         
     
