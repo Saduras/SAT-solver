@@ -37,6 +37,7 @@ from sklearn.externals import joblib
 #from sklearn import cross_validation
 from sklearn.feature_selection import RFE
 from sklearn.decomposition import PCA
+from sklearn.model_selection import RandomizedSearchCV
 
 #DL libaries
 import keras
@@ -57,35 +58,52 @@ tqdm.pandas()
 NUM_CLAUSES = 100
 l_PER_CLAUSE = 4
 
+def score_function(estimator, X, y):
+    
+    y_pred_class = estimator.predict(X)
+    
+    acc = y_pred_class == y
+    
+    return sum(acc)
+    
+
 
 def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
-    if(model=="LOG"):
-        MOD = linear_model.LogisticRegression()
-    if(model=="GAUSS"):
-        MOD = GaussianNB()
-    if(model=="TREE"):
-        MOD = tree.DecisionTreeClassifier()
-    if(model=="NN"):
-        MOD = MLPClassifier(hidden_layer_sizes=(5, 5),solver='sgd')
     if(model=="RF"): #Best Performer so far
-        mf = np.array(x_train).shape[1]
-        MOD = RandomForestClassifier(max_features = mf,  
-                                   n_estimators = 10, 
-                                   max_depth = 15, 
-                                   min_samples_split = 3, 
-                                   verbose=2) 
+        MOD = RandomForestClassifier()
+     
     
-    if(model=="SVM"): #Slow, but the best for recall
-        MOD = svm.SVC(kernel = 'linear',probability=True, max_iter=1000)
-        #max_iter = 1000 is a good number for a coffee
-            
-    MOD.fit(x_train, y_train)
+    #x_train, x_test, y_train, y_test = dataSplit(df_x, df_y)
+        
+    m_params = { 
+            "RF": {
+                    "n_estimators" : [10, 1000],
+                    "max_depth": [5, 1000],
+                    "min_samples_split": [2, 10],
+                    "max_features": ["sqrt", None],
+                    "verbose": [2]
+                    }
+            }
+    
+     
+    search_inter = 5
+    random_search = RandomizedSearchCV(MOD,
+                                       param_distributions = m_params[model], 
+                                       n_iter = search_inter,
+                                       scoring = score_function) #implement that instead of fit.
+    
+    random_search.fit(x_train, y_train)
+    #MOD.fit(x_train, y_train)
     y_pred_class = MOD.predict(x_test)
     y_pred_prob =  MOD.predict_proba(x_test)
+    
+    acc = y_pred_class == y_test
+    accuracy = acc.sum(axis = 1)/len(y_test)
+    print("Acuracy:", accuracy)
+    
     if log:
         print(model,"\n confusion matrix:")
         print(confusion_matrix(y_test.astype("int"), y_pred_class))
-    accuracy = 1 #accuracy_score(y_test.astype("int"), y_pred_class)
     precision = 1 # precision_score(y_test.astype("int"), y_pred_class, average = "samples")
     recall = 1 #recall_score(y_test.astype("int"), y_pred_class)
     
