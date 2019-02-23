@@ -80,8 +80,8 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
         
     m_params = { 
             "RF": {
-                    "n_estimators" : [10, 20],    #worth replacing with a distribution
-                    "max_depth": [5, 50],         #worth replacing with a distribution
+                    "n_estimators" : [1, 2],    #worth replacing with a distribution
+                    "max_depth": [2, 3],         #worth replacing with a distribution
                     "min_samples_split": [2, 10],  #worth replacing with a distribution
                     "max_features": ["sqrt", None],
                     "verbose": [2]
@@ -95,16 +95,17 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
             }
     
      
-    search_inter = 5
-    opt_model = RandomizedSearchCV(MOD,
+    search_inter = 2
+    random_search = RandomizedSearchCV(MOD,
                                        param_distributions = m_params[model], 
                                        n_iter = search_inter,
-                                       scoring = score_function) #implement that instead of fit.
+                                       scoring = score_function,
+                                       return_train_score = True) 
     
-    opt_model.fit(x_train, y_train)
-    y_pred_class = opt_model.predict(x_test)
-    y_pred_prob =  opt_model.predict_proba(x_test)
-    
+    random_search.fit(x_train, y_train)
+   
+    y_pred_class = random_search.best_estimator_.predict(x_test)
+    y_pred_prob =  random_search.best_estimator_.predict_proba(x_test)
     acc = y_pred_class == y_test
     accuracy = acc.sum(axis = 1)/len(y_test)
     print("Acuracy:", accuracy)
@@ -112,10 +113,8 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     if log:
         print(model,"\n confusion matrix:")
         print(confusion_matrix(y_test.astype("int"), y_pred_class))
-    precision = 1 # precision_score(y_test.astype("int"), y_pred_class, average = "samples")
-    recall = 1 #recall_score(y_test.astype("int"), y_pred_class)
     
-    return [accuracy,precision, recall], y_pred_class, y_pred_prob, opt_model
+    return accuracy, y_pred_class, y_pred_prob, random_search.best_estimator_
 
 
 def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):  
@@ -191,7 +190,7 @@ def learnedHeuristic(cnf):
     #tranlates cnf to a array the model understands    
     clauses = np.zeros((NUM_CLAUSES, l_PER_CLAUSE)) 
     
-    for c, clause in enumerate(cnf[NUM_CLAUSES]):
+    for c, clause in enumerate(cnf[:NUM_CLAUSES]):
         for l, literal in enumerate(list(clause.keys())[:(l_PER_CLAUSE-1)]):
            clauses[c][l] = literal 
            
@@ -199,12 +198,18 @@ def learnedHeuristic(cnf):
     
     filename = 'finalized_model.sav'
     MOD = pickle.load(open(filename, 'rb'))
-    smart_literal = MOD.predict(clauses)
+    smart_literal = MOD.predict(clauses)[0]
     
+    count = 0
     for sl in smart_literal:
-        if sl in list(cnf[0].keys()):
-            print("learned")
-            return smart_literal[0], True
+        for c in cnf:
+            count += 1
+            if sl in list(c.keys()):
+                print("learned")
+                return sl, True
+            if count > 100:
+                print("this one instead")
+                return list(c.keys())[0], True
         
     print("next instead")
     return list(cnf[0].keys())[0], True
