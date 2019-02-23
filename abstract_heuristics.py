@@ -38,6 +38,7 @@ from sklearn.externals import joblib
 from sklearn.feature_selection import RFE
 from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.preprocessing import MultiLabelBinarizer
 
 #DL libaries
 import keras
@@ -67,35 +68,42 @@ def score_function(estimator, X, y):
     return sum(acc)
     
 
-
 def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
+    
     if(model=="RF"): #Best Performer so far
         MOD = RandomForestClassifier()
-     
+    elif(model == "NN"):
+        
+        MOD = MLPClassifier((100,))
     
     #x_train, x_test, y_train, y_test = dataSplit(df_x, df_y)
         
     m_params = { 
             "RF": {
-                    "n_estimators" : [10, 1000],
-                    "max_depth": [5, 1000],
-                    "min_samples_split": [2, 10],
+                    "n_estimators" : [10, 20],    #worth replacing with a distribution
+                    "max_depth": [5, 50],         #worth replacing with a distribution
+                    "min_samples_split": [2, 10],  #worth replacing with a distribution
                     "max_features": ["sqrt", None],
                     "verbose": [2]
+                    },
+            "NN": {
+                    "hidden_layer_sizes": [(100), (200, 200)],
+                    "activation": ["identity", "logistic", "tanh", "relu"],
+                    "learning_rate_init": [0.001, 0.0001], #worth replacing with a distribution
+                    "max_iter": [200, 500], #worth replacing with a distribution
                     }
             }
     
      
     search_inter = 5
-    random_search = RandomizedSearchCV(MOD,
+    opt_model = RandomizedSearchCV(MOD,
                                        param_distributions = m_params[model], 
                                        n_iter = search_inter,
                                        scoring = score_function) #implement that instead of fit.
     
-    random_search.fit(x_train, y_train)
-    #MOD.fit(x_train, y_train)
-    y_pred_class = MOD.predict(x_test)
-    y_pred_prob =  MOD.predict_proba(x_test)
+    opt_model.fit(x_train, y_train)
+    y_pred_class = opt_model.predict(x_test)
+    y_pred_prob =  opt_model.predict_proba(x_test)
     
     acc = y_pred_class == y_test
     accuracy = acc.sum(axis = 1)/len(y_test)
@@ -107,7 +115,7 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     precision = 1 # precision_score(y_test.astype("int"), y_pred_class, average = "samples")
     recall = 1 #recall_score(y_test.astype("int"), y_pred_class)
     
-    return [accuracy,precision, recall], y_pred_class, y_pred_prob, MOD
+    return [accuracy,precision, recall], y_pred_class, y_pred_prob, opt_model
 
 
 def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):  
@@ -151,6 +159,7 @@ def loadData(path_x = './data/Splits.csv', path_y = './data/SplitsLabel.csv'):
 
 def dataSplit(df_x, df_y):
     """split data into test and train """
+    
     x_train, x_test, y_train, y_test = train_test_split(df_x, 
                                                         df_y, 
                                                         test_size = 0.2, 
@@ -201,10 +210,11 @@ def learnedHeuristic(cnf):
     return list(cnf[0].keys())[0], True
 
 def main():
-    #models = ['RF', 'LOG', 'GAUSS', 'TREE', 'NN', 'SVM']
+    #models = ['RF', 'NN']
     model = "RF"
     
     df_x, df_y = loadData()
+    #y_enc = MultiLabelBinarizer().fit_transform(df_y)
     results, MOD = trainModel(model, df_x, df_y)
     print("results: ", results)
     print("Model: ", MOD)
