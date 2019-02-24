@@ -20,6 +20,8 @@ def randomChoice(cnf):
     rand_lit = random.choice(list(cnf[clause].keys()))
     return rand_lit, True
     
+def DLIS_max(cnf):
+    return DLIS(cnf, take = "max")
 
 def DLIS(cnf, take = "min"):
     """returns the literal that appears in most clauses
