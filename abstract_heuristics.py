@@ -40,15 +40,6 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.preprocessing import MultiLabelBinarizer
 
-#DL libaries
-import keras
-from keras.models import Sequential
-from keras.layers import Activation, Dense, Dropout, Flatten
-from keras.models import model_from_json
-import keras.callbacks as cbks
-from keras.constraints import min_max_norm
-from keras.constraints import unit_norm
-
 #Progress bars
 #from tqdm import tqdm_notebook as tqdm
 from tqdm import tqdm 
