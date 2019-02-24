@@ -232,13 +232,13 @@ def trainModel(model, df_x, df_y):
                                                                          log = False)
     
     # save the model to disk
-    filename = 'finalized_model.sav'
+    filename = model + 'finalized_model.sav'
     pickle.dump(MOD, open(filename, 'wb'))
     
     return results, MOD   
 
 
-def learnedHeuristic(assignment):
+def learnedHeuristic(assignment, model = "RF"):
     """given a sudoku assignment, the model finds a possible solution.
     Input:
         assigment: (list(int)) current assigments for the sudoku.
@@ -259,7 +259,7 @@ def learnedHeuristic(assignment):
     _, open_ass = np.where(current_sudoku == 0)
     
     #load saved model.    
-    filename = 'finalized_model.sav'
+    filename = model + 'finalized_model.sav'
     MOD = pickle.load(open(filename, 'rb'))
     
     #get model prediction
