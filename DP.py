@@ -95,7 +95,7 @@ def removePureLiteral(cnf, assignment):
     # TODO: consider removing or optimizing
     return cnf, assignment, False
 
-def choseLiteral(cnf, choice = "next"):
+def choseLiteral(cnf, assignment, choice = "next"):
     """choose literal and it's assigned value based on heuristics
     input: 
         cnf: the cnf in the standard format
@@ -116,50 +116,34 @@ def choseLiteral(cnf, choice = "next"):
     elif choice == "paretoDominant":
         return paretoDominant(cnf)
     elif choice == "smart":
-        return learnedHeuristic(cnf)
+        return learnedHeuristic(assignment)
     else:
         return nextLiteral(cnf) #best choice for time
-     
-    #efficient implementation (not working)
-#    heuristics = {
-#            "DLIS": DLIS(cnf),
-#            "BOHM": BOHM(cnf),
-#            "random": randomChoice(cnf),
-#            "next": nextLiteral(cnf)
-#            }
-    
-#    return heuristics.get(choice, nextLiteral(cnf))
-    
-def saveSplit(cnf):
-    """save all splits in a .csv
+ 
+def saveSS(assignment):
+    """Saves the sudoku state in the file SSplits.csv
     """
-    #TO-DO: find a more compact feature representation.
-        
-    #feature size reduced for memory sake...
-    num_clauses = 100
-    l_per_clause = 4
     
-    #The clauses are appended next to each other with zeros in between clauses.
-    clauses = np.zeros((num_clauses,l_per_clause)) 
+    #maps the assignment to a position in the sudoku vector.
+    #It overgenerates, but that is fine for now.
+    ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190) }
     
-    for c, clause in enumerate(cnf[:num_clauses]):
-        for l, literal in enumerate(list(clause.keys())[:(l_per_clause-1)]):
-           clauses[c][l] = literal 
-           
-    clauses = np.reshape(clauses, (1, num_clauses*l_per_clause))
+    sudoku_state = np.zeros((1, 81))
     
-    #creates a dataframe with only one line.
-    df = pd.DataFrame(data = clauses, 
-                      columns = [x for x in range(num_clauses*l_per_clause)], 
+    #is there a pythonic way of writing it?
+    for a in assignment:
+        if a > 0:
+            sudoku_state[0][ass2sud[a]] = a
+     
+    df = pd.DataFrame(data = sudoku_state, 
+                      columns = [x for x in range(81)], 
                       dtype = "int_")
     
-    #the dataframe is anexed to the bottom of Splits.csv
-    path = './data/Splits.csv'
+    path = './data/SSplits.csv'
     try:
         df.to_csv(path_or_buf = path, mode = 'a', header = False)
     except:
         pass
-
     
 def split(value, cnf, assignment):
     if(DEBUG):
@@ -171,10 +155,10 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
         
     # take 1st literal
-    literal, _ = choseLiteral(cnf, choice = "BOHM")
+    literal, _ = choseLiteral(cnf, assignment, choice = "smart")
     
     if SAVE_SPLIT:
-        saveSplit(cnf)   
+        saveSS(assignment)   
         
     if(DEBUG):
         splitTime = time() - startTime
