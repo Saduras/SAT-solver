@@ -3,7 +3,6 @@ from abstract_heuristics import learnedHeuristic
 from time import time
 import numpy as np
 import pandas as pd
-import csv
 
 
 DEBUG = True
@@ -115,8 +114,8 @@ def choseLiteral(cnf, assignment, choice = "next"):
         return BOHM(cnf)
     elif choice == "paretoDominant":
         return paretoDominant(cnf)
-    elif choice == "smart":
-        return learnedHeuristic(assignment)
+    elif choice == "RF":
+        return learnedHeuristic(cnf, assignment)
     else:
         return nextLiteral(cnf) #best choice for time
  
@@ -155,7 +154,7 @@ def split(value, cnf, assignment):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
         
     # take 1st literal
-    literal, _ = choseLiteral(cnf, assignment, choice = "smart")
+    literal, _ = choseLiteral(cnf, assignment, choice = "next")
     
     if SAVE_SPLIT:
         saveSS(assignment)   
