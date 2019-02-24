@@ -14,16 +14,8 @@ from os import listdir
 from os.path import isfile, join
 from load_cnf import parse_cnf
 import pickle
-
-DEBUG = True
-SAVE_SPLIT = True
-DPcalls = 0
-splitCalls = 0
-splitTime = 0
-assignCalls = 0
-assignTime = 0
-unitClauseCalls = 0
-unitClauseTime = 0
+import seaborn as sns
+import random
 
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
@@ -46,7 +38,7 @@ def removeTautology(cnf):
 
     return cnf
 
-def assign(literal, value, cnf, assignment, stats):
+def assign(literal, value, cnf, assignment, stats, heuristic = "next"):
 
     stats["assign_calls"] += 1
     startTime = time()
@@ -73,7 +65,7 @@ def assign(literal, value, cnf, assignment, stats):
 
     stats["assign_time"] += time() - startTime
     
-    return result_cnf, result_assignment, stats
+    return result_cnf, heuristic,  stats, result_assignment
 
 def removeUnitClause(cnf, assignment, stats):
     
@@ -92,8 +84,8 @@ def removeUnitClause(cnf, assignment, stats):
                 loop = True
                 change = True
 
-                cnf, assignment, stats = assign(list(clause.keys())[0], 
-                                                True, 
+                cnf, _, stats, assignment = assign(list(clause.keys())[0], 
+                                                True,
                                                 cnf, 
                                                 assignment,
                                                 stats)
@@ -130,7 +122,7 @@ def choseLiteral(cnf, assignment, choice = "next"):
     elif choice == "paretoDominant":
         return paretoDominant(cnf)
     elif choice == "RF":
-        return learnedHeuristic(assignment)
+        return learnedHeuristic(cnf, assignment)
     else:
         return nextLiteral(cnf) #best choice for time
     
@@ -146,8 +138,8 @@ def split(value, cnf, assignment, heuristic, stats):
     literal, _ = choseLiteral(cnf, assignment, choice = heuristic)
     
     stats["split_time"] = time() - startTime
-        
-    return assign(literal, value, cnf, assignment, stats)
+                  
+    return assign(literal, value, cnf, assignment, stats, heuristic)
 
 def DP(cnf, heuristic, stats, assignment = []):
     """
@@ -221,12 +213,12 @@ def solve(cnf, heuristic, log = False):
     if(log):
         print("Satisfiable:", len(assignment) > 0)
         print(f"DP calls {stats['DP_calls']}")
-        if(assignCalls > 0):
+        if(stats["assign_calls"] > 0):
             print(f"assign calls: {stats['assign_calls']} total time: {stats['assign_time']:.2f}s avg time: {stats['assign_time']/stats['assign_calls'] * 1000:.3f}ms")
-        if(unitClauseCalls > 0):
+        if(stats["unit_clause_calls"] > 0):
             print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
-        if(splitCalls > 0):
-            print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['splitTime']/stats['splitCalls'] * 1000:.3f}ms")
+        if(stats["split_calls"] > 0):
+            print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
     return assignment, stats
     
 
@@ -250,7 +242,7 @@ def alternative_main():
         matrix[v[0] - 1][v[1] - 1] = v[2]
     print(matrix)
     
-def runExperiments(num_exp = 1):
+def runExperiments(num_exp = 2):
     
     heuristics =["random", 
                  "next", 
@@ -261,6 +253,20 @@ def runExperiments(num_exp = 1):
                  "RF"]
     
     h = len(heuristics)
+    
+    cols = ["sudoku name", 
+            "heuristic", 
+            "DP_calls", 
+            "split_calls", 
+            "split_time",
+            "assign_calls", 
+            "assign_time", 
+            "unit_clause_calls",
+            "unit_clause_time",
+            "solved_sudoku",
+            "solve_time"]
+    
+    df_exp = pd.DataFrame(data = None, columns = cols)
     
     DP_calls = np.zeros((h, num_exp))
     split_calls = np.zeros((h, num_exp))
@@ -280,27 +286,32 @@ def runExperiments(num_exp = 1):
     # load sudokus
     path = './data/dimac_sudoku/'
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
+    random.shuffle(onlyfiles)
     
     for h, heu in enumerate(heuristics):
+        print(heu)
         for idx, f in enumerate(onlyfiles):
             
             #stops once the number of experiments has been reached.
             if idx >= num_exp:
                 break
             
+            
             #start counting time
             start = time()
             
             #open file
             with open(f, 'r') as file:
-                sudoku = file.read()
+                sudoku = file.read()            
 
             #rule and sudoku are put together and parsed.
             dimacs = rules + sudoku
             cnf = parse_cnf(dimacs)
-            
             #solves the sudoku and get stats.
             assignment, stats = solve(cnf, heu, log = True)
+            
+            stats["heuristic"] = heu
+            stats["sudoku name"] = f
             
             #store stats.
             DP_calls[h][idx] = stats["DP_calls"]
@@ -318,28 +329,33 @@ def runExperiments(num_exp = 1):
                 # check if number of positive assignments is 81 
                 if(len([a for a in assignment if a > 0]) != 81):
                     #invalid solution
-                    solved_sudoku[h][idx] = 2
+                    solved_sudoku[h][idx] = 0
                     print("NOT Solved")
-                    print(assignment)
                     
-                    
-    print(f"DP_calls: \n{DP_calls}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"split_calls: \n{split_calls}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"split_time: \n{split_time}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"assign_calls: \n{assign_calls}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"assign_time: \n{assign_time}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"unit_clause_calls: \n{unit_clause_calls}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"unit_clause_time: \n{unit_clause_time}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"solve_time: \n{solve_time}")
-    print("^^^^^^^^^^^^^^^^^^^^^^")
-    print(f"solved_sudoku: \n{solved_sudoku}")
+            df_exp = df_exp.append(stats, ignore_index = True)
+    
+    sns.set(rc={'figure.figsize':(30,15)}) #in inches
+    sns.barplot(x = "heuristic", y = "DP_calls",
+                data = df_exp)    
+
+            
+#    print(f"DP_calls: \n{DP_calls}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"split_calls: \n{split_calls}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"split_time: \n{split_time}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"assign_calls: \n{assign_calls}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"assign_time: \n{assign_time}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"unit_clause_calls: \n{unit_clause_calls}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"unit_clause_time: \n{unit_clause_time}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"solve_time: \n{solve_time}")
+#    print("^^^^^^^^^^^^^^^^^^^^^^")
+#    print(f"solved_sudoku: \n{solved_sudoku}")
         
                     
          #load saved model.    
