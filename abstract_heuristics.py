@@ -38,6 +38,8 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.preprocessing import MultiLabelBinarizer
 
+from heuristics import nextLiteral
+
 #Progress bars
 #from tqdm import tqdm_notebook as tqdm
 from tqdm import tqdm 
@@ -98,8 +100,8 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     #dict with dicts with parameters to be optimized.    
     m_params = { 
             "RF": {
-                    "n_estimators" : np.linspace(10, 50, 10, dtype = "int"),    #worth replacing with a distribution
-                    "max_depth": [2, 5, 10, None],         #worth replacing with a distribution
+                    "n_estimators" : np.linspace(10, 100, 30, dtype = "int"),    #worth replacing with a distribution
+                    "max_depth": [10, 20, 50, 100, None],         #worth replacing with a distribution
                     "min_samples_split": np.linspace(2, 10, 5, dtype = "int"),  #worth replacing with a distribution
                     "max_features": ["sqrt", "log2", None],
                     "verbose": [1+int(log)]
@@ -118,7 +120,9 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
                                        param_distributions = m_params[model], 
                                        n_iter = search_inter,
                                        scoring = scoreFunction,
-                                       return_train_score = True) 
+                                       return_train_score = True,
+                                       random_state = 42,
+                                       cv = 5) 
     
     #optimization + train the model.
     random_search.fit(x_train, y_train)
@@ -238,7 +242,7 @@ def trainModel(model, df_x, df_y):
     return results, MOD   
 
 
-def learnedHeuristic(assignment, model = "RF"):
+def learnedHeuristic(cnf, assignment, model = "RF"):
     """given a sudoku assignment, the model finds a possible solution.
     Input:
         assigment: (list(int)) current assigments for the sudoku.
@@ -266,8 +270,7 @@ def learnedHeuristic(assignment, model = "RF"):
     smart_literal = MOD.predict(current_sudoku)[0]
 
     
-    if np.random.uniform() > .05: #necessary to avoid infinite loops.
-        
+    if np.random.uniform() > .5: #necessary to avoid infinite loops.   
         #return one of the predicted literals for a unresolved cell of the
         #sudoku.
         sl = np.random.choice(open_ass)
@@ -275,11 +278,10 @@ def learnedHeuristic(assignment, model = "RF"):
         return int(smart_literal[sl]), True
     
     else:   
-        #return a randomly chosen literal
-        print("WARNING: random instead")
-        a =  np.random.randint(1, 9, 3)
-        print("WARNING: random instead", a)
-        return a[0] * 100 + a[1] * 10 + a[2], True   
+        #calls next literal
+        a =  nextLiteral(cnf)  
+        print("NEXT LITERAL:", a)
+        return  a
 
 def learnedHeuristicCNF(cnf):  
     """deprecated.
