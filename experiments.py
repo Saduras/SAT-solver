@@ -133,8 +133,7 @@ def split(value, cnf, assignment, heuristic, stats):
 
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
-        
-    # take 1st literal
+
     literal, _ = choseLiteral(cnf, assignment, choice = heuristic)
     
     stats["split_time"] = time() - startTime
@@ -165,6 +164,7 @@ def DP(cnf, heuristic, stats, assignment = []):
     
     # stuck sudoku
     if stats["DP_calls"] > 100:
+        print("You suck!")
         return assignment, stats
     
     # simplification
@@ -180,7 +180,7 @@ def DP(cnf, heuristic, stats, assignment = []):
         solved_assignment, stats = DP(*split(True,
                                              cnf,
                                              assignment,
-                                             heuristic, 
+                                             heuristic,
                                              stats))
         
         # split with True satisfied
@@ -189,6 +189,8 @@ def DP(cnf, heuristic, stats, assignment = []):
         
         # or didn't work; then try False
         else:
+            #Why does it call split() instead of assign()?
+            stats["backtracks"] += 1
             return DP(*split(False, 
                              cnf, 
                              assignment, 
@@ -201,6 +203,7 @@ def solve(cnf, heuristic, log = False):
     stats = {
             "DP_calls": 0,
             "split_calls": 0,
+            "backtracks": 0,
             "split_time": 0,
             "assign_calls": 0,
             "assign_time": 0,
@@ -223,9 +226,9 @@ def solve(cnf, heuristic, log = False):
             print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
         if(stats["split_calls"] > 0):
             print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
+            print(f"backtrcks: {stats['backtracks']}")
     return assignment, stats
     
-
 
 def alternative_main():
     from load_cnf import load_cnf
@@ -346,6 +349,7 @@ def runExperiments(num_exp = 2):
     cols = ["sudoku name", 
             "heuristic", 
             "DP_calls", 
+            "backtracks"
             "split_calls", 
             "split_time",
             "assign_calls", 
@@ -356,16 +360,6 @@ def runExperiments(num_exp = 2):
             "solve_time"]
     
     df_exp = pd.DataFrame(data = None, columns = cols)
-    
-    DP_calls = np.zeros((h, num_exp))
-    split_calls = np.zeros((h, num_exp))
-    split_time = np.zeros((h, num_exp))
-    assign_calls = np.zeros((h, num_exp))
-    assign_time = np.zeros((h, num_exp))
-    unit_clause_calls = np.zeros((h, num_exp))
-    unit_clause_time = np.zeros((h, num_exp))
-    solved_sudoku = np.zeros((h, num_exp))
-    solve_time = np.zeros((h, num_exp))
     
     # load rules
     rule_path = './data/sudoku-rules.txt'
@@ -400,30 +394,18 @@ def runExperiments(num_exp = 2):
             assignment, stats = solve(cnf, heu, log = True)
             
             stats["heuristic"] = heu
-            stats["sudoku name"] = f
-            
-            #store stats.
-            DP_calls[h][idx] = stats["DP_calls"]
-            split_calls[h][idx] = stats["split_calls"]
-            split_time[h][idx] = stats["split_time"]
-            assign_calls[h][idx] = stats["assign_calls"]
-            assign_time[h][idx] = stats["assign_time"]
-            unit_clause_calls[h][idx] = stats["unit_clause_calls"]
-            unit_clause_time[h][idx] = stats["unit_clause_time"]
-            solve_time[h][idx] = (time() - start) #seconds
-            stats["solve_time"] = solve_time[h][idx]
+            stats["sudoku name"] = f        
+            stats["solve_time"] = (time() - start) #seconds
             
             if(len(assignment) > 0):
                 #valid solution
-                solved_sudoku[h][idx] = 1
+                stats["solved_sudoku"] = 1
                 # check if number of positive assignments is 81 
                 if(len([a for a in assignment if a > 0]) != 81):
                     #invalid solution
-                    solved_sudoku[h][idx] = 0
+                    stats["solved_sudoku"] = 0
                     print("NOT Solved")
-            
-            stats["solved_sudoku"] = solved_sudoku[h][idx]
-            
+                    
             df_exp = df_exp.append(stats, ignore_index = True)
                     
     #saves the expiriments
@@ -433,9 +415,9 @@ def runExperiments(num_exp = 2):
 
 
 if __name__ == "__main__":
-    runExperiments(num_exp = 10)
+    runExperiments(num_exp = 1)
     
-     #load saved experiments   
+#     #load saved experiments   
     filename = 'experiment_stats.sav'
     df_exp = pickle.load(open(filename, 'rb'))
     
@@ -446,6 +428,7 @@ if __name__ == "__main__":
     
     y_labels = ["DP_calls", 
                 "split_calls"
+                "backtracks"
                 "unit_clause_calls",
                 "solved_sudoku",
                 "split_time", 
@@ -457,10 +440,10 @@ if __name__ == "__main__":
     hue_labels = [None]
     
     fails = plotAllThat(df_exp, x_labels, y_labels, hue_labels)
-    
-    
-    
-    
+#    
+#    
+#    
+#    
     
     
     
