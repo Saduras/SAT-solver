@@ -37,6 +37,15 @@ from sklearn.feature_selection import RFE
 from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.externals.joblib import dump, load
+
+from dask.distributed import Client
+#import joblib
+#from distributed.joblib import DistributedBackend 
+
+# it is important to import joblib from sklearn if we want the distributed 
+#features to work with sklearn!
+from sklearn.externals.joblib import Parallel, parallel_backend, register_parallel_backend
 
 from heuristics import nextLiteral, DLIS, BOHM, randomChoice, paretoDominant
 
@@ -67,8 +76,11 @@ def scoreFunction(estimator, X, y):
     #create a matrix of correct assingments.
     acc = y_pred_class == y
     
-    #sum all correct assingments.
-    return sum(acc)
+    #only sum the assignments where the sudoku is fully correct
+    accuracy = acc.sum(axis = 1)/81 == 1
+    
+    #sum all fully correct assingments.
+    return accuracy.mean()
     
 
 def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
@@ -100,8 +112,8 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     #dict with dicts with parameters to be optimized.    
     m_params = { 
             "RF": {
-                    "n_estimators" : np.linspace(10, 100, 30, dtype = "int"),    #worth replacing with a distribution
-                    "max_depth": [10, 20, 50, 100, None],         #worth replacing with a distribution
+                    "n_estimators" : np.linspace(2, 5, 3, dtype = "int"),    #worth replacing with a distribution
+                    "max_depth": [5, 10, None],         #worth replacing with a distribution
                     "min_samples_split": np.linspace(2, 10, 5, dtype = "int"),  #worth replacing with a distribution
                     "max_features": ["sqrt", "log2", None],
                     "verbose": [1+int(log)]
@@ -115,16 +127,15 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
             }
     
     #number of iterations for optimization. 
-    search_inter = 10
     random_search = RandomizedSearchCV(MOD,
                                        param_distributions = m_params[model], 
-                                       n_iter = search_inter,
+                                       n_iter = 2,
                                        scoring = scoreFunction,
                                        return_train_score = True,
                                        random_state = 42,
-                                       cv = 5) 
+                                       cv = 3) 
     
-    #optimization + train the model.
+    #trains and optimizes the model
     random_search.fit(x_train, y_train)
     
     #recover the best model
@@ -134,7 +145,7 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     y_pred_class = opt_model.predict(x_test)
     y_pred_prob =  opt_model.predict_proba(x_test)
     acc = y_pred_class == y_test  
-    accuracy = acc.sum(axis = 1)/81
+    accuracy = acc.sum(axis = 1)/81 == 1
 
     if log:
         print(acc)
@@ -236,8 +247,13 @@ def trainModel(model, df_x, df_y):
                                                                          log = False)
     
     # save the model to disk
+    #the saved file is 200Mb+ 
+    #filename = model + 'finalized_model.sav'
+    #pickle.dump(MOD, open(filename, 'wb')) 
+    
+    #save model to disk (lighter version)
     filename = model + 'finalized_model.sav'
-    pickle.dump(MOD, open(filename, 'wb'))
+    pickle.dump(model, open(filename, 'wb'))  
     
     return results, MOD   
 
@@ -278,7 +294,7 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     
     #load saved model.    
     filename = model + 'finalized_model.sav'
-    MOD = pickle.load(open(filename, 'rb'))
+    MOD = load(open(filename, 'rb'))
     
     #get model prediction
     smart_literal = MOD.predict(current_sudoku)[0]
