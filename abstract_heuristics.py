@@ -38,7 +38,7 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.preprocessing import MultiLabelBinarizer
 
-from heuristics import nextLiteral
+from heuristics import nextLiteral, DLIS, BOHM, randomChoice, paretoDominant
 
 #Progress bars
 #from tqdm import tqdm_notebook as tqdm
@@ -250,6 +250,20 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
         one literal for the split.
     """
     
+    rand_choice = np.random.uniform() #necessary to avoid infinite loops.
+    if rand_choice > .5:
+        if rand_choice > .9:
+            a = nextLiteral(cnf)
+        elif rand_choice > .8:
+            a = DLIS(cnf)
+        elif rand_choice > .7:
+            a = BOHM(cnf)
+        else:  
+            a = paretoDominant(cnf)
+            
+        print("heuristicly random literal:", a)
+        return  a
+    
     #mapping from sudoku literal to cell space at current_sudoku.
     ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190)}
     
@@ -269,19 +283,12 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     #get model prediction
     smart_literal = MOD.predict(current_sudoku)[0]
 
+    #return one of the predicted literals for a unresolved cell of the sudoku.
+    sl = np.random.choice(open_ass)
+    print("learned:", smart_literal[sl] )
+    return int(smart_literal[sl]), True
     
-    if np.random.uniform() > .5: #necessary to avoid infinite loops.   
-        #return one of the predicted literals for a unresolved cell of the
-        #sudoku.
-        sl = np.random.choice(open_ass)
-        print("learned:", smart_literal[sl] )
-        return int(smart_literal[sl]), True
-    
-    else:   
-        #calls next literal
-        a =  nextLiteral(cnf)  
-        print("NEXT LITERAL:", a)
-        return  a
+        
 
 def learnedHeuristicCNF(cnf):  
     """deprecated.
