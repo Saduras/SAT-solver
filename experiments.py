@@ -163,6 +163,10 @@ def DP(cnf, heuristic, stats, assignment = []):
     if(hasEmptyClause(cnf)):
         return [], stats
     
+    # stuck sudoku
+    if stats["DP_calls"] > 100:
+        return assignment, stats
+    
     # simplification
     cnf, assignment, done, stats = removeUnitClause(cnf, assignment, stats)
     
@@ -242,6 +246,91 @@ def alternative_main():
         matrix[v[0] - 1][v[1] - 1] = v[2]
     print(matrix)
     
+    
+def titleNAxis(fig_plot, title, label_x, label_y):
+    """enter title and axis labels with standard font sizes.
+    """
+    fig_plot.set_title(title, fontsize = 40)
+    fig_plot.set_xlabel(label_x, fontsize = 30)
+    fig_plot.set_ylabel(label_y, fontsize = 30)
+    
+    return fig_plot
+    
+def savePlot(fig_plot, fig_name, path = ".//figures//"):
+    """saves a seaborn figure
+    """
+    try:
+        fig = fig_plot.get_figure()
+        file_path = path + fig_name + ".png"
+        fig.savefig(file_path)
+        return file_path
+    except:
+        return False
+    
+def plotAllThat(df_exp, x_labels, y_labels, hue_labels, path = ".//figures//", plot_type = "all"):
+    
+    size_x = 30
+    size_y = 15
+    
+    sns.set(rc={'figure.figsize':(size_x,size_y)}) #in inches
+    fails ={"barplot": [0, []],
+            "boxplot": [0, []],
+            "swarmplot": [0, []],
+            "catplot": [0, []]}
+    
+    for i, label_i in enumerate(x_labels):
+        for j, label_j in enumerate(y_labels):
+            for k, label_k in enumerate(hue_labels):
+                title = label_i + " vs " + label_j + " " + str(label_k)
+                
+                #barplot
+                if (plot_type == "barplot") | (plot_type == "all"):       
+                    try:
+                        f_plot = sns.barplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
+                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
+                        file_path = savePlot(f_plot, title + " barplot")
+                    except:
+                        fails["barplot"][0] += 1
+                        fails["barplot"][1].append((label_i, label_j))
+   
+# FIND OUT WHY THOSE PLOTS WONT WORK                  
+#                #boxplot
+#                if (plot_type == "boxplot") | (plot_type == "all"):
+#                    try:
+#                        f_plot = sns.boxplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
+#                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
+#                        f_plot.set_size_inches(size_x, size_y)
+#                        file_path = savePlot(f_plot, title + " boxolot")
+#                    except:
+#                         fails["boxplot"][0] += 1
+#                         fails["boxplot"][1].append((label_i, label_j))
+#                         
+#                #swarmplot
+#                if (plot_type == "swarmplot") | (plot_type == "all"):
+#                    try:
+#                        f_plot = sns.swarmplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
+#                        #f_plot.set_size_inches(size_x, size_y)
+#                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
+#                        file_path = savePlot(f_plot, title + " swarmplot")
+#                    except:
+#                        fails["swarmplot"][0] += 1
+#                        fails["swarmplot"][1].append((label_i, label_j))
+                        
+#                if (plot_type == "catplot") | (plot_type == "all"):
+#                    try:
+#                        f_plot = sns.catplot(x = label_i, 
+#                                             y = label_j, 
+#                                             hue = label_k, 
+#                                             data = df_exp, 
+#                                             height= size_y,
+#                                             aspect=size_x/size_y)   
+#                        file_path = savePlot(f_plot, title + " catplot")
+#                    except:
+#                        fails["catplot"][0] += 1
+#                        fails["catplot"][1].append((label_i, label_j))
+        
+    return fails
+
 def runExperiments(num_exp = 2):
     
     heuristics =["random", 
@@ -322,6 +411,7 @@ def runExperiments(num_exp = 2):
             unit_clause_calls[h][idx] = stats["unit_clause_calls"]
             unit_clause_time[h][idx] = stats["unit_clause_time"]
             solve_time[h][idx] = (time() - start) #seconds
+            stats["solve_time"] = solve_time[h][idx]
             
             if(len(assignment) > 0):
                 #valid solution
@@ -331,41 +421,43 @@ def runExperiments(num_exp = 2):
                     #invalid solution
                     solved_sudoku[h][idx] = 0
                     print("NOT Solved")
-                    
-            df_exp = df_exp.append(stats, ignore_index = True)
-    
-    sns.set(rc={'figure.figsize':(30,15)}) #in inches
-    sns.barplot(x = "heuristic", y = "DP_calls",
-                data = df_exp)    
-
             
-#    print(f"DP_calls: \n{DP_calls}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"split_calls: \n{split_calls}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"split_time: \n{split_time}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"assign_calls: \n{assign_calls}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"assign_time: \n{assign_time}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"unit_clause_calls: \n{unit_clause_calls}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"unit_clause_time: \n{unit_clause_time}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"solve_time: \n{solve_time}")
-#    print("^^^^^^^^^^^^^^^^^^^^^^")
-#    print(f"solved_sudoku: \n{solved_sudoku}")
-        
+            stats["solved_sudoku"] = solved_sudoku[h][idx]
+            
+            df_exp = df_exp.append(stats, ignore_index = True)
                     
-         #load saved model.    
+    #saves the expiriments
     filename = 'experiment_stats.sav'
-    pickle.dump(DP_calls, open(filename, 'wb'))
+    pickle.dump(df_exp, open(filename, 'wb'))
     
 
 
 if __name__ == "__main__":
-    runExperiments()
+    runExperiments(num_exp = 10)
+    
+     #load saved experiments   
+    filename = 'experiment_stats.sav'
+    df_exp = pickle.load(open(filename, 'rb'))
+    
+    x_labels = ["heuristic", 
+                "DP_calls" 
+                "split_calls", 
+                "unit_clause_calls"]
+    
+    y_labels = ["DP_calls", 
+                "split_calls"
+                "unit_clause_calls",
+                "solved_sudoku",
+                "split_time", 
+                "assign_calls",  
+                "assign_time",
+                "unit_clause_time",         
+                "solve_time"]
+    
+    hue_labels = [None]
+    
+    fails = plotAllThat(df_exp, x_labels, y_labels, hue_labels)
+    
     
     
     
