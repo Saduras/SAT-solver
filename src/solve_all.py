@@ -10,15 +10,15 @@ sat_error = 0
 unsat = 0
 save = True
 start_at = np.random.randint(17011) #11502 -> 5904
-stop_at = min(start_at + 5500, 22011)
+stop_at = min(start_at + 100, 22011)
 
 # load rules
-rule_path = './data/sudoku-rules.txt'
+rule_path = '../data/sudoku-rules.txt'
 with open(rule_path, 'r') as file:
         rules = file.read()
 
 # load sudokus
-path = './data/dimac_sudoku/'
+path = '../data/dimac_sudoku/'
 onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
 for idx,f in enumerate(onlyfiles):
     
@@ -45,7 +45,7 @@ for idx,f in enumerate(onlyfiles):
     
     #save the finished sudoku
     if save:
-        save_path = './data/solved_sudoku/'
+        save_path = '../data/solved_sudoku/'
         s_name = f.split("/")[-1] + "_solved.txt"
         with open(save_path + s_name, "w+") as file:
             file.writelines("%s\n" % x for x in assignment)
