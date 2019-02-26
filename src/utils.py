@@ -1,7 +1,6 @@
 import numpy as np 
 import pandas as pd
 
-
 def saveSS(cnf, assignment):
     """Saves the sudoku state in the file SSplits.csv
     """
@@ -55,3 +54,7 @@ def DIMACS_to_sudoku(assignment):
         v = [int(i) for i in str(value)]
         matrix[v[0] - 1][v[1] - 1] = v[2]
     return matrix
+
+def assignmentToDIMACSFile(assignment, filename):
+    with open(filename,'w') as file:
+        file.write('\n'.join([str(v) for v in assignment]))

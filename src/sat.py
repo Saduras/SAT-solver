@@ -1,6 +1,7 @@
 import sys
 from load_cnf import load_cnf
-from DP import solve
+from DP import solve, print_stats
+from utils import assignmentToDIMACSFile
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -12,4 +13,6 @@ args = parser.parse_args()
 
 cnf = load_cnf(args.filename)
 assignment, stats = solve(cnf, args.strategy)
-print(assignment)
+print_stats(assignment, stats)
+
+assignmentToDIMACSFile(assignment, f'{args.filename}.out')
