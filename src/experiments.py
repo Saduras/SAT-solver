@@ -22,7 +22,7 @@ from load_cnf import load_cnf
 from tqdm import tqdm 
 #tqdm.pandas()
 
-def runExperiments(num_exp = 2):
+def runExperiments(num_exp = 2, new_exp = True):
     
     heuristics =["random", 
                  "next", 
@@ -37,7 +37,7 @@ def runExperiments(num_exp = 2):
     cols = ["sudoku name", 
             "heuristic", 
             "DP_calls", 
-            "backtracks"
+            "backtracks",
             "split_calls", 
             "split_time",
             "assign_calls", 
@@ -68,8 +68,7 @@ def runExperiments(num_exp = 2):
         for idx, f in enumerate(onlyfiles):
             
             
-            
-            if idx% 10 == 0:
+            if idx % 9 == 0:
                 print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
                       , end = "\n")
                 
@@ -114,14 +113,14 @@ def runExperiments(num_exp = 2):
             
             
         #saves the expiriments 
-        df_exp.to_csv(filename, mode = 'a')
+        df_exp.to_csv(filename, mode = 'a', header = False)
                     
     
     #pickle.dump(df_exp, open(filename, 'wb'))
     
 
 if __name__ == "__main__":
-    runExperiments(num_exp = 100)
+    runExperiments(num_exp = 2, new_exp= True)
     
 #     #load saved experiments   
 #    filename = '..//data//experiment_stats.csv'
