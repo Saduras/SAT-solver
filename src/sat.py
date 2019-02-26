@@ -1,13 +1,15 @@
 import sys
 from load_cnf import load_cnf
 from DP import solve
+import argparse
 
-if(len(sys.argv) != 2):
-    print("Missing arguments! Expecting 'DIMACS file path'")
-    exit()
+parser = argparse.ArgumentParser()
+parser.add_argument('-S', '--strategy', dest='strategy', type=int, default=1,
+                    help='1 for the basic DP and n = 2 or 3 for your two other strategies')
+parser.add_argument('filename', help='the input file is the concatenation of all required input clauses.')
 
-filename = sys.argv[1]
+args = parser.parse_args()
 
-cnf = load_cnf(filename)
-assignment, stats = solve(cnf)
+cnf = load_cnf(args.filename)
+assignment, stats = solve(cnf, args.strategy)
 print(assignment)

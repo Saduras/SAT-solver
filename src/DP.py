@@ -2,8 +2,18 @@ from heuristics import DLIS, BOHM, randomChoice, nextLiteral, paretoDominant
 from abstract_heuristics import learnedHeuristic
 from time import time
 import warnings
+from enum import Enum
 
 MAX_RECURSIONS = 1000
+
+class Heuristic(Enum):
+    NEXT = 1
+    DLIS = 2
+    DLIS_MAX = 3
+    BOHM = 4
+    PARETO_DOMINAT = 5
+    RANDOM_FOREST = 6
+    RANDOM = 7
 
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
@@ -86,7 +96,7 @@ def removeUnitClause(cnf, assignment, stats = None):
     
     return cnf, assignment, change, stats
 
-def choseLiteral(cnf, assignment, choice = "next"):
+def choseLiteral(cnf, assignment, choice = Heuristic.NEXT):
     """choose literal and it's assigned value based on heuristics
     input: 
         cnf: the cnf in the standard format
@@ -98,17 +108,17 @@ def choseLiteral(cnf, assignment, choice = "next"):
     """
     
     #naive implementation:
-    if choice == "random":
+    if choice == Heuristic.RANDOM:
         return randomChoice(cnf) 
-    elif choice == "DLIS": # worst choice for split and time
+    elif choice == Heuristic.DLIS: # worst choice for split and time
         return DLIS(cnf, take = "min") 
-    elif choice == "DLIS_max":
+    elif choice == Heuristic.DLIS_MAX:
         return DLIS(cnf, take = "max") 
-    elif choice == "BOHM": #best choice for split
+    elif choice == Heuristic.BOHM: #best choice for split
         return BOHM(cnf)
-    elif choice == "paretoDominant":
+    elif choice == Heuristic.PARETO_DOMINAT:
         return paretoDominant(cnf)
-    elif choice == "RF":
+    elif choice == Heuristic.RANDOM_FOREST:
         return learnedHeuristic(cnf, assignment)
     else:
         return nextLiteral(cnf) #best choice for time
@@ -199,6 +209,7 @@ def solve(cnf, heuristic=None, onSplit=None):
             else empty list
         stats - dictionary with stats about run
     """
+    
     stats = {
             "DP_calls": 0,
             "split_calls": 0,
