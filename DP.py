@@ -115,7 +115,7 @@ def choseLiteral(cnf, assignment, choice = "next"):
     else:
         return nextLiteral(cnf) #best choice for time
  
-def split(value, cnf, assignment, heuristic, stats = None):
+def split(cnf, assignment, heuristic, stats = None):
     
     if(stats):
     stats["split_calls"] += 1
@@ -127,9 +127,9 @@ def split(value, cnf, assignment, heuristic, stats = None):
     literal, _ = choseLiteral(cnf, assignment, choice = heuristic)
     
     if(stats):
-    stats["split_time"] = time() - startTime
+        stats["split_time"] = time() - startTime
     
-    return assign(literal, value, cnf, assignment, stats)
+    return literal, stats
 
 def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     """
@@ -168,7 +168,8 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
         if onSplit:
             onSplit(cnf, assignment)  
         
-        new_cnf, new_assignment, stats = split(True, cnf, assignment, heuristic, stats)
+        literal, stats = split(cnf, assignment, heuristic, stats)
+        new_cnf, new_assignment, stats = assign(literal, True, cnf, assignment, stats)
         solved_assignment, stats = DP(new_cnf, heuristic, onSplit, stats, new_assignment)
         
         # split with True satisfied
@@ -181,7 +182,8 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
             if(stats):
                 stats["backtracks"] += 1
             
-            new_cnf, new_assignment, stats = split(False, cnf, assignment, heuristic, stats)
+            literal, stats = split(cnf, assignment, heuristic, stats)
+            new_cnf, new_assignment, stats = assign(literal, False, cnf, assignment, stats)
             return DP(new_cnf, heuristic, onSplit, stats, new_assignment)
     
 def solve(cnf, heuristic=None, onSplit=None):

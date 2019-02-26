@@ -136,36 +136,26 @@ class DPTests(unittest.TestCase):
         self.assertEqual(cnf, [{123:True, -123:True}, {-123:True, -234:True}])
         self.assertEqual(new_cnf, [ {-234:True} ])
 
-    def test_split_oneClausePos(self):
+    def test_split_oneClause(self):
         cnf = [{123: True}]
         assignment = []
 
-        new_cnf, new_assignment, _ = split(True, cnf, assignment, heuristic=None)
-        self.assertEqual(new_cnf, [])
-        self.assertEqual(new_assignment, [123])
-
-    def test_split_oneClauseNeg(self):
-        cnf = [{123:True}]
-        assignment = []
-
-        new_cnf, new_assignment, _ = split(False, cnf, assignment, heuristic=None)
-        self.assertEqual(new_cnf, [{}])
-        self.assertEqual(new_assignment, [-123])
+        literal, _ = split(cnf, assignment, heuristic=None)
+        self.assertEqual(literal, 123)
 
     def test_split_multiClause(self):
         cnf = [{123:True}, {234:True}]
         assignment = []
 
-        new_cnf, new_assignment, _ = split(True, cnf, assignment, heuristic=None)
-        self.assertEqual(new_cnf, [{234:True}])
-        self.assertEqual(new_assignment, [123])
+        literal, _ = split(cnf, assignment, heuristic=None)
+        self.assertTrue(literal in [123, 234])
 
     def test_split_empty(self):
         cnf = []
         assignment = []
 
         with self.assertRaises(Exception) as context:
-            split(True, cnf, assignment, heuristic=None)
+            split(cnf, assignment, heuristic=None)
 
         self.assertTrue('Invalid CNF' in str(context.exception))
 
