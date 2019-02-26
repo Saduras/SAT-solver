@@ -128,10 +128,10 @@ def split(value, cnf, assignment, heuristic, stats = None):
     
     if(stats):
     stats["split_time"] = time() - startTime
-                  
+    
     return assign(literal, value, cnf, assignment, stats)
 
-def DP(cnf, heuristic, onSplit = None, stats = None, assignment = []):
+def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     """
     Solves a SAT-problem given in clausal normal form (CNF) using the Davis-
         Putnam algorithm
@@ -184,8 +184,7 @@ def DP(cnf, heuristic, onSplit = None, stats = None, assignment = []):
             new_cnf, new_assignment, stats = split(False, cnf, assignment, heuristic, stats)
             return DP(new_cnf, heuristic, onSplit, stats, new_assignment)
     
-def solve(cnf, heuristic, log = False):
-    
+def solve(cnf, heuristic=None, onSplit=None):
     stats = {
             "DP_calls": 0,
             "split_calls": 0,
@@ -197,69 +196,21 @@ def solve(cnf, heuristic, log = False):
             "unit_clause_time": 0
             }
     
-    #removes Tautologies
     cnf = removeTautology(cnf)
     
     #Davis Putnam Sat Solver
-    assignment, stats = DP(cnf, heuristic, onSplit = saveSS, stats = stats)
+    return DP(cnf, heuristic, onSplit, stats = stats)
 
-    if(log):
-        print("Satisfiable:", len(assignment) > 0)
-        print(f"DP calls {stats['DP_calls']}")
-        if(stats["assign_calls"] > 0):
+def print_stats(assignment, stats):
+    print("Satisfiable:", len(assignment) > 0)
+    print(f"DP calls {stats['DP_calls']}")
+    if(stats["assign_calls"] > 0):
             print(f"assign calls: {stats['assign_calls']} total time: {stats['assign_time']:.2f}s avg time: {stats['assign_time']/stats['assign_calls'] * 1000:.3f}ms")
         if(stats["unit_clause_calls"] > 0):
             print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
-        if(stats["split_calls"] > 0):
-            print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
-            print(f"backtracks: {stats['backtracks']}")
-    return assignment, stats
- 
-def saveSS(cnf, assignment):
-    """Saves the sudoku state in the file SSplits.csv
-    """
-    
-    #maps the assignment to a position in the sudoku vector.
-    #It over-generates, but that is fine for now.
-    ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190) }
-    
-    sudoku_state = np.zeros((1, 81))
-    
-    #is there a pythonic way of writing it?
-    for a in assignment:
-        if a > 0:
-            sudoku_state[0][ass2sud[a]] = a
-     
-    df = pd.DataFrame(data = sudoku_state, 
-                      columns = [x for x in range(81)], 
-                      dtype = "int_")
-    
-    path = './data/SSplits.csv'
-    try:
-        df.to_csv(path_or_buf = path, mode = 'a', header = False)
-    except:
-        pass
-        
-def saveLabel(assignment, n_splits):
-    """save the finished sudoku in a .csv
-    """
-    
-    sudoku_solution = [a for a in assignment if a > 0]
-    
-    sudoku_solution.sort()
-     
-    label = np.reshape(np.array(sudoku_solution*n_splits), 
-                       (n_splits, len(sudoku_solution)))
-
-    df = pd.DataFrame(label, columns = [x for x in range(len(sudoku_solution))])
-    
-    path = './data/SplitsLabel.csv'
-    try:
-        df.to_csv(path_or_buf = path, 
-                  mode = 'a',
-                  header = False)
-    except:
-        pass
+    if(stats["split_calls"] > 0):
+        print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
+        print(f"backtracks: {stats['backtracks']}")
 
 def main():
     from load_cnf import load_cnf
@@ -272,38 +223,8 @@ def main():
     filename = sys.argv[1]
 
     cnf = load_cnf(filename)
-    assignment = solve(cnf)
-    
-    sudoku_solution = [a for a in assignment if a > 0]
-    print(sudoku_solution)
-    print(len(sudoku_solution))
-    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
-    for value in sudoku_solution:
-        v = [int(i) for i in str(value)]
-        print(v)
-        matrix[v[0] - 1][v[1] - 1] = v[2]
-    print(matrix)
-    
-
-
-def alternative_main():
-    from load_cnf import load_cnf
-    
-    filename = ".\\data\\sudoku-example-processed.txt"
-    cnf = load_cnf(filename)
-    assignment = solve(cnf)
-    
-    
-    #print sudoku in a (almost) human readible way
-    sudoku_solution = [a for a in assignment if a > 0]
-    #print(sudoku_solution)
-    print(len(sudoku_solution))
-    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
-    for value in sudoku_solution:
-        v = [int(i) for i in str(value)]
-        #print(v)
-        matrix[v[0] - 1][v[1] - 1] = v[2]
-    print(matrix)
+    assignment, stats = solve(cnf)
+    print_stats(assignment, stats)
 
 if __name__ == "__main__":
-    alternative_main()
+    main()

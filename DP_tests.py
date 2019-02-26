@@ -172,19 +172,19 @@ class DPTests(unittest.TestCase):
     def test_DP_empty(self):
         cnf = []
 
-        assignment, _ = DP(cnf, heuristic=None)
+        assignment, _ = DP(cnf)
         self.assertEqual(assignment, [])
 
     def test_DP_tinyCase(self):
         cnf = [{123:True}]
 
-        assignment, _ = DP(cnf, heuristic=None)
+        assignment, _ = DP(cnf)
         self.assertEqual(assignment, [123])
 
     def test_DP_recursion(self):
         cnf = [{123:True, 234:True},{345:True, 456:True}]
 
-        assignment, _ = DP(cnf, heuristic=None)
+        assignment, _ = DP(cnf)
         self.assertEqual(len(assignment), 2)
 
 if __name__ == '__main__':
