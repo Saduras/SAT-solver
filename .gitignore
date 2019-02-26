@@ -112,3 +112,5 @@ venv.bak/
 \.idea/SAT-solver\.iml
 
 RFfinalized_model\.sav
+
+figures/heuristic vs split_time None bar\.png
