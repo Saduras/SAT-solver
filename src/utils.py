@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def saveSS(cnf, assignment):
+def saveSS(cnf, assignment, path = '../data/SSplits.csv' ):
     """Saves the sudoku state in the file SSplits.csv
     """
     
@@ -21,13 +21,12 @@ def saveSS(cnf, assignment):
                       columns = [x for x in range(81)], 
                       dtype = "int_")
     
-    path = './data/SSplits.csv'
     try:
         df.to_csv(path_or_buf = path, mode = 'a', header = False)
     except:
         pass
         
-def saveLabel(assignment, n_splits):
+def saveLabel(assignment, n_splits, path = '../data/SplitsLabel.csv'):
     """save the finished sudoku in a .csv
     """
     
@@ -40,7 +39,6 @@ def saveLabel(assignment, n_splits):
 
     df = pd.DataFrame(label, columns = [x for x in range(len(sudoku_solution))])
     
-    path = './data/SplitsLabel.csv'
     try:
         df.to_csv(path_or_buf = path, 
                   mode = 'a',
@@ -55,3 +53,5 @@ def DIMACS_to_sudoku(assignment):
         v = [int(i) for i in str(value)]
         matrix[v[0] - 1][v[1] - 1] = v[2]
     return matrix
+
+

@@ -168,7 +168,7 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     
     else:
         if onSplit:
-            onSplit(cnf, assignment)  
+            onSplit(cnf, assignment, path)  
         
         literal, stats = split(cnf, assignment, heuristic, stats)
         new_cnf, new_assignment, stats = assign(literal, True, cnf, assignment, stats)
@@ -193,7 +193,7 @@ def solve(cnf, heuristic=None, onSplit=None):
         cnf - SAT problem in clausal normal form; expects clauses to be 
             dictionaries of literals
         heuristic - which heuristic to use to decide on splits
-        onSplit - call back just before every split, arguments: (cnf, assignment)
+        onSplit - call back just before every split, arguments: (cnf, assignment, path)
     output:
         assignment - if satisfiable: list of assignments for solution 
             else empty list

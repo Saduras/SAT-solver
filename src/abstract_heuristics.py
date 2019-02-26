@@ -126,7 +126,7 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     return accuracy, y_pred_class, y_pred_prob, opt_model
 
 
-def loadData(path_x = './data/SSplits.csv', path_y = './data/SplitsLabel.csv'):  
+def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv'):  
     """load data for training the model.
     Must be in format x,81
     Input:
@@ -224,7 +224,7 @@ def trainModel(model, df_x, df_y):
     #pickle.dump(MOD, open(filename, 'wb')) 
     
     #save model to disk (lighter version)
-    filename = model + 'finalized_model.sav'
+    filename = "..//model//" + model + 'finalized_model.sav'
     pickle.dump(MOD, open(filename, 'w+b'))  
     
     return results, MOD   
@@ -265,7 +265,7 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     _, open_ass = np.where(current_sudoku == 0)
     
     #load saved model.    
-    filename = model + 'finalized_model.sav'
+    filename = "..//model//" + model + 'finalized_model.sav'
     MOD = pickle.load(open(filename, 'rb'))
     
     #get model prediction
