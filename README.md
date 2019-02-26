@@ -7,12 +7,18 @@ UvA 2019 Information Retrieval assignment
 docker build -t sat -f ./Dockerfile .
 
 # run
-docker run -v <absolut-path-to-data-directory>:/data sat /data sudoku-example-processed.txt
+docker run -v <absolut-path-to-data-directory>:/data sat /data sudoku-example-processed.txt -S2
+
+# save image
+docker save sat -o ./sat
+
+# load image
+docker load -i ./sat
 ```
 
 ## Run with python
 ```
-python sat.py ./data/sudoku-example-processed.txt
+python ./src/sat.py ./data/sudoku-example-processed.txt -S2
 ```
 
 ## Development
