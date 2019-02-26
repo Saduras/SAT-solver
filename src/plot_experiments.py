@@ -34,7 +34,7 @@ def savePlot(fig_plot, fig_name, path = ".//figures//"):
         return False   
     
 def plotAllCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
-                     path = ".//figures//", plot_type = "all", 
+                     path = "..//figures//", plot_type = "all", 
                      name  = "", plot_size = (15, 7)):
     """plot and saves Categorical plots.
     Inputs:
@@ -78,7 +78,7 @@ def plotAllCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
     
     
 def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
-                     path = ".//figures//", plot_type = "bar", 
+                     path = "..//figures//", plot_type = "bar", 
                      name  = "", plot_size = (15, 7)):
     """plot and saves Categorical plots.
     Inputs:
@@ -147,8 +147,10 @@ def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
 if __name__ == "__main__":
 
          #load saved experiments   
-    filename = 'experiment_stats.sav'
-    df_exp = pickle.load(open(filename, 'rb'))
+    filename = '..//data//experiment_stats.csv'
+    df_exp = pd.read_csv(filename)
+#    filename = 'experiment_stats.sav'
+#    df_exp = pickle.load(open(filename, 'rb'))
     
     x_categoricals = ["heuristic"]
                 
@@ -159,15 +161,15 @@ if __name__ == "__main__":
                     "unit_clause_calls"]
     
     y_labels = ["DP_calls",
-                "split_calls"]
-#                "backtracks",
-#                "unit_clause_calls",
-#                "solved_sudoku",
-#                "split_time", 
-#                "assign_calls",  
-#                "assign_time",
-#                "unit_clause_time",         
-#                "solve_time"]
+                "split_calls",
+                "backtracks",
+                "unit_clause_calls",
+                "solved_sudoku",
+                "split_time", 
+                "assign_calls",  
+                "assign_time",
+                "unit_clause_time",         
+                "solve_time"]
 #    
     hue_labels = [None]
     
