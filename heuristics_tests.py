@@ -19,7 +19,7 @@ class DPTests(unittest.TestCase):
                {-123:True}]
         
         literal = DLIS(cnf)
-        self.assertEqual(literal, (-123, True))
+        self.assertEqual(literal, (-312, True))
     
     def test_BOHM_trivial(self):
         cnf = [{-123:True}]
