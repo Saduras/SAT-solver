@@ -97,7 +97,8 @@ def runExperiments(num_exp = 2):
             df_exp = df_exp.append(stats, ignore_index = True)
             
             if idx% 10 == 0:
-                print(f"sudoku: {f[20:]} {idx}/{num_exp}", end = "\r")
+                print(f"{heu} sudoku: {f[20:]} {idx}/{num_exp}                "
+                      , end = "\r")
                     
     #saves the expiriments 
     #should save it as a csv!
