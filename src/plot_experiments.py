@@ -75,6 +75,27 @@ def plotAllCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
         
     return fails
             
+def allInOne(df_exp, hue, labels,
+             path = "..//figures//", name  = "", plot_size = (5, 5)):
+    
+    #size of the figure
+    size_x = plot_size[0]
+    size_y = plot_size[1]
+    
+    all_labels = labels + [hue]
+    f_plot = sns.pairplot(df_exp[all_labels], hue = hue, height= size_y, aspect=size_x/size_y)
+    f_plot.fig.suptitle(name)
+    
+    try: 
+        #saves the plot using a unique name.
+        file_name = path + name + ".png"
+        f_plot.savefig(file_name)
+        file_path = file_name
+    except:
+        #if the file is not saved, the file path is returned as False.
+        file_path = False
+        
+    return file_path
     
     
 def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
@@ -156,7 +177,7 @@ if __name__ == "__main__":
                 
     
     x_numericals = ["DP_calls",
-                    "backtracks"
+                    "backtracks",
                     "split_calls", 
                     "unit_clause_calls"]
     
@@ -173,9 +194,14 @@ if __name__ == "__main__":
 #    
     hue_labels = [None]
     
-    #working plot types: "strip", "swarm", "point", "bar"
-    fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
-                             plot_type = "bar")
+    #working plot types: "strip", "swarm", "point", "bar", box, violin
+#    fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
+#                             plot_type = "strip")
+    fails = allInOne(df_exp, 
+                     hue = "heuristic", 
+                     labels = x_numericals, 
+                     name  = "pairplot")
+    
     print(fails)
 #    
 #    
