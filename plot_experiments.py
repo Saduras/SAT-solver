@@ -33,6 +33,50 @@ def savePlot(fig_plot, fig_name, path = ".//figures//"):
         
         return False   
     
+def plotAllCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
+                     path = ".//figures//", plot_type = "all", 
+                     name  = "", plot_size = (15, 7)):
+    """plot and saves Categorical plots.
+    Inputs:
+        df_exp: (pd.DataFrame) containing the data to be ploted.
+        x_labels: (list(str)) name of the columns to be used as x axis.
+        y_labels:  (list(str)) name of the columns to be used as y axis.
+        hue_labels: (list(str)) name of the columns to be used as hue.
+        path = (str) folder to save the plots.
+        plot_type (str or list(str)) if all use "all" otherwise specify a list
+            of plot types. Plots currently supported are "strip", "swarm", 
+            "point", "bar"
+        name: (str) string to be added to the name of the plot. This does not 
+            replace automatically generated name.
+        plot_size: (tuple(float, float)) x and y sizes for the plot.
+    Output:
+        fails: (dict(list(int, list(tuple(str))))) 
+    """
+    
+    if (plot_type == "all")  | (plot_type == ["all"]):\
+        #all suported categorical plots
+        cat_plots = ["strip", "swarm", "box", "violin", "boxen", "point", "bar", "count"]
+    else:
+        #only use the specified plots
+        cat_plots = plot_type
+        
+    fails = {x: [] for x in cat_plots}
+    
+    #plot and save everyting
+    for cp in cat_plots:
+        fails[cp] = plotCategoricals(df_exp, 
+                                     x_labels, 
+                                     y_labels, 
+                                     hue_labels, 
+                                     path, 
+                                     plot_type, 
+                                     name,
+                                     plot_size)
+        
+    return fails
+            
+    
+    
 def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
                      path = ".//figures//", plot_type = "bar", 
                      name  = "", plot_size = (15, 7)):
@@ -53,6 +97,7 @@ def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
             problematic plots and fails[1] ouputs a tuple containing 
             information about the problematic plots. The information is wraped 
             in a tuple in the sequence: x_label, y_label, hue_label, file_path.
+        files: figures of extention .png
     """
 
     sns.set(style = "ticks")
@@ -98,14 +143,6 @@ def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
                     fails[1].append((label_i, label_j, label_k, file_path))
         
     return fails
-    
-
-
-   
-                      
-
-        
-    return fails
 
 if __name__ == "__main__":
 
@@ -117,24 +154,26 @@ if __name__ == "__main__":
                 
     
     x_numericals = ["DP_calls",
-                    "back"
+                    "backtracks"
                     "split_calls", 
                     "unit_clause_calls"]
     
     y_labels = ["DP_calls",
-                "split_calls",
-                "backtracks",
-                "unit_clause_calls",
-                "solved_sudoku",
-                "split_time", 
-                "assign_calls",  
-                "assign_time",
-                "unit_clause_time",         
-                "solve_time"]
-    
+                "split_calls"]
+#                "backtracks",
+#                "unit_clause_calls",
+#                "solved_sudoku",
+#                "split_time", 
+#                "assign_calls",  
+#                "assign_time",
+#                "unit_clause_time",         
+#                "solve_time"]
+#    
     hue_labels = [None]
     
-    fails = plotCategoricals(df_exp, x_categoricals, y_labels)
+    #working plot types: "strip", "swarm", "point", "bar"
+    fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
+                             plot_type = "bar")
     print(fails)
 #    
 #    
