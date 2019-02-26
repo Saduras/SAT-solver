@@ -1,8 +1,6 @@
 from heuristics import DLIS, BOHM, randomChoice, nextLiteral, paretoDominant
 from abstract_heuristics import learnedHeuristic
 from time import time
-import numpy as np
-import pandas as pd
 import warnings
 
 MAX_RECURSIONS = 100
