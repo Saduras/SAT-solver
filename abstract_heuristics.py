@@ -225,7 +225,7 @@ def trainModel(model, df_x, df_y):
     
     #save model to disk (lighter version)
     filename = model + 'finalized_model.sav'
-    pickle.dump(model, open(filename, 'wb'))  
+    pickle.dump(MOD, open(filename, 'w+b'))  
     
     return results, MOD   
 
@@ -266,7 +266,7 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     
     #load saved model.    
     filename = model + 'finalized_model.sav'
-    MOD = load(open(filename, 'rb'))
+    MOD = pickle.load(open(filename, 'rb'))
     
     #get model prediction
     smart_literal = MOD.predict(current_sudoku)[0]
