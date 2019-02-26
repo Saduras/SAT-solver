@@ -27,7 +27,7 @@ class DPTests(unittest.TestCase):
         cnf = []
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, cnf)
         self.assertEqual(new_assignment, assignment)
         self.assertEqual(change, False)
@@ -36,7 +36,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True, 321:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, cnf)
         self.assertEqual(new_assignment, assignment)
         self.assertEqual(change, False)
@@ -45,7 +45,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -54,7 +54,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [123])
         self.assertEqual(change, True)
@@ -63,7 +63,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {423:True, -352:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{423:True, -352:True}])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -72,7 +72,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {234:True}, {423:True, -352:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{423:True, -352:True}])
         self.assertEqual(new_assignment, [-123, 234])
         self.assertEqual(change, True)
@@ -81,7 +81,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {123:True, -352:True, 423:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{-352:True, 423:True}])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -91,7 +91,7 @@ class DPTests(unittest.TestCase):
 
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -100,7 +100,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [123])
 
@@ -108,7 +108,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, False, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, False, cnf, assignment)
         self.assertEqual(new_cnf, [{}])
         self.assertEqual(new_assignment, [-123])
 
@@ -116,7 +116,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True},{123:True},{-234:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [ {-234:True} ])
         self.assertEqual(new_assignment, [123])
     
@@ -124,7 +124,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True, -123:True}, {-123:True}, {-234:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [ {}, {-234:True} ])
         self.assertEqual(new_assignment, [123])
 
@@ -132,7 +132,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True, -123:True}, {-123:True, -234:True}]
         assignment = []
 
-        new_cnf, _ = assign(123, True, cnf, assignment)
+        new_cnf, _, _ = assign(123, True, cnf, assignment)
         self.assertEqual(cnf, [{123:True, -123:True}, {-123:True, -234:True}])
         self.assertEqual(new_cnf, [ {-234:True} ])
 
@@ -140,7 +140,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123: True}]
         assignment = []
 
-        new_cnf, new_assignment = split(True, cnf, assignment)
+        new_cnf, new_assignment, _ = split(True, cnf, assignment, heuristic=None)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [123])
 
@@ -148,7 +148,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment = split(False, cnf, assignment)
+        new_cnf, new_assignment, _ = split(False, cnf, assignment, heuristic=None)
         self.assertEqual(new_cnf, [{}])
         self.assertEqual(new_assignment, [-123])
 
@@ -156,7 +156,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}, {234:True}]
         assignment = []
 
-        new_cnf, new_assignment = split(True, cnf, assignment)
+        new_cnf, new_assignment, _ = split(True, cnf, assignment, heuristic=None)
         self.assertEqual(new_cnf, [{234:True}])
         self.assertEqual(new_assignment, [123])
 
@@ -165,21 +165,27 @@ class DPTests(unittest.TestCase):
         assignment = []
 
         with self.assertRaises(Exception) as context:
-            split(True, cnf, assignment)
+            split(True, cnf, assignment, heuristic=None)
 
         self.assertTrue('Invalid CNF' in str(context.exception))
 
     def test_DP_empty(self):
         cnf = []
 
-        assignment = DP(cnf)
+        assignment, _ = DP(cnf, heuristic=None)
         self.assertEqual(assignment, [])
 
     def test_DP_tinyCase(self):
         cnf = [{123:True}]
 
-        assignment = DP(cnf)
-        self.assertEqual(assignment, [123])    
+        assignment, _ = DP(cnf, heuristic=None)
+        self.assertEqual(assignment, [123])
+
+    def test_DP_recursion(self):
+        cnf = [{123:True, 234:True},{345:True, 456:True}]
+
+        assignment, _ = DP(cnf, heuristic=None)
+        self.assertEqual(len(assignment), 2)
 
 if __name__ == '__main__':
     unittest.main()
