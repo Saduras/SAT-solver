@@ -50,23 +50,32 @@ def runExperiments(num_exp = 2):
     df_exp = pd.DataFrame(data = None, columns = cols)
     
     # load rules
-    rule_path = './data/sudoku-rules.txt'
+    rule_path = '../data/sudoku-rules.txt'
     with open(rule_path, 'r') as file:
             rules = file.read()
     
     # load sudokus
-    path = './data/dimac_sudoku/'
+    path = '../data/dimac_sudoku/'
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     random.shuffle(onlyfiles)
     
+    filename = '..//data//experiment_stats.csv'
+    if new_exp:
+        df_exp.to_csv(filename, mode = 'w')
+        
     for h, heu in enumerate(heuristics):
-        print(f"heuristic: {heu} {h}/{len(heuristics)} ")
+        print(f"heuristic: {heu} {h+1}/{len(heuristics)} ")
         for idx, f in enumerate(onlyfiles):
             
+            
+            
+            if idx% 10 == 0:
+                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
+                      , end = "\n")
+                
             #stops once the number of experiments has been reached.
             if idx >= num_exp:
                 break
-            
             
             #start counting time
             start = time()
@@ -86,31 +95,37 @@ def runExperiments(num_exp = 2):
             stats["solve_time"] = (time() - start) #seconds
             
             if(len(assignment) > 0):
+    
                 #valid solution
                 stats["solved_sudoku"] = 1
+                
                 # check if number of positive assignments is 81 
                 if(len([a for a in assignment if a > 0]) != 81):
                     #invalid solution
                     stats["solved_sudoku"] = 0
-                    print("NOT Solved")
+                    print("Assignment length incorrect: ", len(assignment))
+                    
+            else:
+                #sudoku is not yet solved
+                stats["solved_sudoku"] = 0
+                print("Sudoku not solved =/")
                     
             df_exp = df_exp.append(stats, ignore_index = True)
             
-            if idx% 10 == 0:
-                print(f"{heu} sudoku: {f[20:]} {idx}/{num_exp}                "
-                      , end = "\r")
+            
+        #saves the expiriments 
+        df_exp.to_csv(filename, mode = 'a')
                     
-    #saves the expiriments 
-    #should save it as a csv!
-    filename = 'experiment_stats.sav'
-    pickle.dump(df_exp, open(filename, 'wb'))
+    
+    #pickle.dump(df_exp, open(filename, 'wb'))
     
 
 if __name__ == "__main__":
     runExperiments(num_exp = 100)
     
 #     #load saved experiments   
-#    filename = 'experiment_stats.sav'
+#    filename = '..//data//experiment_stats.csv'
+    #df_exp = read_csv(filename)
 #    df_exp = pickle.load(open(filename, 'rb'))
 #    
 #    x_categoricals = ["heuristic"]
