@@ -1,0 +1,143 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb 26 10:37:14 2019
+
+@author: Victor Zuanazzi
+"""
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import pickle
+
+def titleNAxis(fig_plot, title, label_x, label_y):
+    """enter title and axis labels with standard font sizes.
+    """
+    fig_plot.set_title(title, fontsize = 40)
+    fig_plot.set_xlabel(label_x, fontsize = 30)
+    fig_plot.set_ylabel(label_y, fontsize = 30)
+    
+    return fig_plot
+    
+def savePlot(fig_plot, fig_name, path = ".//figures//"):
+    """saves a seaborn figure
+    """
+    try:
+        fig = fig_plot.get_figure()
+        print(fig, fig_plot)
+        file_path = path + fig_name + ".png"
+        print(file_path)
+        fig.savefig(file_path)
+        return file_path
+    except:
+        
+        return False   
+    
+def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None, 
+                     path = ".//figures//", plot_type = "bar", 
+                     name  = "", plot_size = (15, 7)):
+    """plot and saves Categorical plots.
+    Inputs:
+        df_exp: (pd.DataFrame) containing the data to be ploted.
+        x_labels: (list(str)) name of the columns to be used as x axis.
+        y_labels:  (list(str)) name of the columns to be used as y axis.
+        hue_labels: (list(str)) name of the columns to be used as hue.
+        path = (str) folder to save the plots.
+        plot_type (str) name of the type of plot. Plots currently supported are
+            "strip", "swarm", "point", "bar"
+        name: (str) string to be added to the name of the plot. This does not 
+            replace automatically generated name.
+        plot_size: (tuple(float, float)) x and y sizes for the plot.
+    Output:
+        fails: (list(int, list(tuple(str)))) fails[0] outputs the number of 
+            problematic plots and fails[1] ouputs a tuple containing 
+            information about the problematic plots. The information is wraped 
+            in a tuple in the sequence: x_label, y_label, hue_label, file_path.
+    """
+
+    sns.set(style = "ticks")
+    
+    #size of the figure
+    size_x = plot_size[0]
+    size_y = plot_size[1]
+    
+    #Makes None iterable:
+    if hue_labels == None:
+        hue_labels = [hue_labels]
+    
+    #for loging problems
+    fails = [0, []]  
+    file_path = []
+    
+    for label_i in x_labels:
+        for label_j in y_labels:
+            for label_k in hue_labels:
+                title = str(label_i) + " vs " + str(label_j) 
+                try:
+                    #actually plots stuff
+                    f_plot = sns.catplot(x = label_i, 
+                                         y = label_j, 
+                                         hue = label_k, 
+                                         data = df_exp, 
+                                         height= size_y,
+                                         aspect=size_x/size_y,
+                                         kind = plot_type)   
+                    f_plot.fig.suptitle(title)
+                    try: 
+                        #saves the plot using a unique name.
+                        file_name = path + name + title + " " + str(label_k) + " " + plot_type + ".png"
+                        f_plot.savefig(file_name)
+                        file_path.append(file_name)
+                    except:
+                        #if the file is not saved, the file path is returned as False.
+                        file_path.append(False)
+                    
+                except:
+                    #logs the problem that failed to save the plot.
+                    fails[0] += 1
+                    fails[1].append((label_i, label_j, label_k, file_path))
+        
+    return fails
+    
+
+
+   
+                      
+
+        
+    return fails
+
+if __name__ == "__main__":
+
+         #load saved experiments   
+    filename = 'experiment_stats.sav'
+    df_exp = pickle.load(open(filename, 'rb'))
+    
+    x_categoricals = ["heuristic"]
+                
+    
+    x_numericals = ["DP_calls",
+                    "back"
+                    "split_calls", 
+                    "unit_clause_calls"]
+    
+    y_labels = ["DP_calls",
+                "split_calls",
+                "backtracks",
+                "unit_clause_calls",
+                "solved_sudoku",
+                "split_time", 
+                "assign_calls",  
+                "assign_time",
+                "unit_clause_time",         
+                "solve_time"]
+    
+    hue_labels = [None]
+    
+    fails = plotCategoricals(df_exp, x_categoricals, y_labels)
+    print(fails)
+#    
+#    
+#    
+    
+    
