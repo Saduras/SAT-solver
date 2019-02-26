@@ -178,7 +178,7 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     
     else:
         if onSplit:
-            onSplit(cnf, assignment, path)  
+            onSplit(cnf, assignment)  
         
         literal, stats = split(cnf, assignment, heuristic, stats)
         new_cnf, new_assignment, stats = assign(literal, True, cnf, assignment, stats)
