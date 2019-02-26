@@ -32,7 +32,7 @@ for idx,f in enumerate(onlyfiles):
     dimacs = rules + sudoku
     cnf = parse_cnf(dimacs)
 
-    assignment = solve(cnf)
+    assignment, _ = solve(cnf)
 
     if(len(assignment) > 0):
         sat += 1

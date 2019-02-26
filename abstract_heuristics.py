@@ -5,47 +5,19 @@ Created on Mon Feb 18 08:31:20 2019
 @author: Victor Zuanazzi
 """
 
-
-
-#base libaries
+#base libraries
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-import warnings
-import time
 
-#advanced libaries
+#advanced libraries
 import pickle
-from sklearn.metrics import confusion_matrix, recall_score, precision_score, accuracy_score
-from sklearn.preprocessing import MinMaxScaler, Imputer
-import lime
-from lime import lime_tabular
-#rom treeinterpreter import treeinterpreter as ti
 
-#ML libaries
-from sklearn.model_selection import GridSearchCV
-from sklearn import linear_model, datasets, tree, svm
+#ML librariesGridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import r2_score, classification_report
-from sklearn.externals import joblib
-#from sklearn import cross_validation
-from sklearn.feature_selection import RFE
-from sklearn.decomposition import PCA
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.externals.joblib import dump, load
-
-from dask.distributed import Client
-#import joblib
-#from distributed.joblib import DistributedBackend 
-
-# it is important to import joblib from sklearn if we want the distributed 
-#features to work with sklearn!
-from sklearn.externals.joblib import Parallel, parallel_backend, register_parallel_backend
 
 from heuristics import nextLiteral, DLIS, BOHM, randomChoice, paretoDominant
 

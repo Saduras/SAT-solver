@@ -1,19 +1,9 @@
 from heuristics import DLIS, BOHM, randomChoice, nextLiteral, paretoDominant
 from abstract_heuristics import learnedHeuristic
 from time import time
-import numpy as np
-import pandas as pd
+import warnings
 
-
-DEBUG = True
-SAVE_SPLIT = True
-DPcalls = 0
-splitCalls = 0
-splitTime = 0
-assignCalls = 0
-assignTime = 0
-unitClauseCalls = 0
-unitClauseTime = 0
+MAX_RECURSIONS = 100
 
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
@@ -36,11 +26,11 @@ def removeTautology(cnf):
 
     return cnf
 
-def assign(literal, value, cnf, assignment):
-    if(DEBUG):
-        global assignCalls, assignTime
-        assignCalls += 1
-        startTime = time()
+def assign(literal, value, cnf, assignment, stats = None):
+
+    if(stats):
+        stats["assign_calls"] += 1
+    startTime = time()
 
     # Add to assignment
     result_assignment = assignment.copy()
@@ -62,18 +52,19 @@ def assign(literal, value, cnf, assignment):
             clause.pop(literal, None)
             clause.pop(-literal, None)
 
-    if(DEBUG):
-        assignTime += time() - startTime
-    return result_cnf, result_assignment
+    if(stats):
+        stats["assign_time"] += time() - startTime
+    
+    return result_cnf, result_assignment, stats
 
-def removeUnitClause(cnf, assignment):
-    if(DEBUG):
-        global unitClauseCalls, unitClauseTime
-        unitClauseCalls += 1
+def removeUnitClause(cnf, assignment, stats = None):
+    if(stats):
+        stats["unit_clause_calls"] += 1
         startTime = time()
 
     change = False
     loop = True
+    
     while loop:
         # stop looping if nothing changes this iteration
         loop = False
@@ -83,16 +74,17 @@ def removeUnitClause(cnf, assignment):
                 loop = True
                 change = True
 
-                cnf, assignment = assign(list(clause.keys())[0], True, cnf, assignment)
+                cnf, assignment, stats = assign(list(clause.keys())[0], 
+                                                True,
+                                                cnf, 
+                                                assignment,
+                                                stats)
                 break
 
-    if(DEBUG):
-        unitClauseTime += time() - startTime
-    return cnf, assignment, change
-
-def removePureLiteral(cnf, assignment):
-    # TODO: consider removing or optimizing
-    return cnf, assignment, False
+    if(stats):
+        stats["unit_clause_time"] += time() - startTime
+    
+    return cnf, assignment, change, stats
 
 def choseLiteral(cnf, assignment, choice = "next"):
     """choose literal and it's assigned value based on heuristics
@@ -102,7 +94,7 @@ def choseLiteral(cnf, assignment, choice = "next"):
             "random", "DLIS", "BOHM", "next"
     output: 
         literal key,
-        value for the assigment.
+        value for the assignment.
     """
     
     #naive implementation:
@@ -110,6 +102,8 @@ def choseLiteral(cnf, assignment, choice = "next"):
         return randomChoice(cnf) 
     elif choice == "DLIS": # worst choice for split and time
         return DLIS(cnf, take = "min") 
+    elif choice == "DLIS_max":
+        return DLIS(cnf, take = "max") 
     elif choice == "BOHM": #best choice for split
         return BOHM(cnf)
     elif choice == "paretoDominant":
@@ -119,135 +113,120 @@ def choseLiteral(cnf, assignment, choice = "next"):
     else:
         return nextLiteral(cnf) #best choice for time
  
-def saveSS(assignment):
-    """Saves the sudoku state in the file SSplits.csv
-    """
+def split(cnf, assignment, heuristic, stats = None):
     
-    #maps the assignment to a position in the sudoku vector.
-    #It overgenerates, but that is fine for now.
-    ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190) }
-    
-    sudoku_state = np.zeros((1, 81))
-    
-    #is there a pythonic way of writing it?
-    for a in assignment:
-        if a > 0:
-            sudoku_state[0][ass2sud[a]] = a
-     
-    df = pd.DataFrame(data = sudoku_state, 
-                      columns = [x for x in range(81)], 
-                      dtype = "int_")
-    
-    path = './data/SSplits.csv'
-    try:
-        df.to_csv(path_or_buf = path, mode = 'a', header = False)
-    except:
-        pass
-    
-def split(value, cnf, assignment):
-    if(DEBUG):
-        global splitCalls, splitTime
-        splitCalls += 1
+    if(stats):
+        stats["split_calls"] += 1
         startTime = time()
 
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
-        
-    # take 1st literal
-    literal, _ = choseLiteral(cnf, assignment, choice = "next")
-    
-    if SAVE_SPLIT:
-        saveSS(assignment)   
-        
-    if(DEBUG):
-        splitTime = time() - startTime
-    return assign(literal, value, cnf, assignment)
 
-def DP(cnf, assignment = []):
+    literal, _ = choseLiteral(cnf, assignment, choice = heuristic)
+    
+    if(stats):
+        stats["split_time"] = time() - startTime
+    
+    return literal, stats
+
+def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     """
-    Solves a SAT-problem given in clausal normal form (CNF) using the Davis-Putnam algorithm
+    Solves a SAT-problem given in clausal normal form (CNF) using the Davis-
+        Putnam algorithm
     input:
         cnf - SAT-problem in clausal normal form
+        heuristic - which heuristic to use to decide on splits
+        onSplit - call back just before every split, arguments: (cnf, assignment)
+        stats - dictionary with runtime stats; leave empty
         assignment - list of already assigned truth values; leave empty
     output:
-        If satisfiable: list of assignments for solution
-        else: empty list
+        assignment - if satisfiable: list of assignments for solution 
+            else empty list
+        stats - dictionary with stats about run
     """
-    if(DEBUG):
-        global DPcalls
-        DPcalls += 1
+    
+    if(stats):
+        stats["DP_calls"] += 1
 
     # success condition: empty set of clauses
     if(len(cnf) == 0):
-        return assignment
+        return assignment, stats
 
     # failure condition: empty clause
     if(hasEmptyClause(cnf)):
-        return []
+        return [], stats
+    
+    # stuck SAT problems
+    if stats and stats["DP_calls"] > MAX_RECURSIONS:
+        warnings.warn(f"Reached limit of {MAX_RECURSIONS} recursions.", RuntimeWarning)
+        return assignment, stats
     
     # simplification
-    cnf, assignment, done = removeUnitClause(cnf, assignment)
-    if(not done):
-        cnf, assignment, done = removePureLiteral(cnf, assignment)
+    cnf, assignment, done, stats = removeUnitClause(cnf, assignment, stats)
     if(done):
-        return DP(cnf, assignment)
+        return DP(cnf, heuristic, onSplit, stats, assignment)
+    
     else:
-        solved_assignment = DP(*split(True, cnf, assignment))
+        if onSplit:
+            onSplit(cnf, assignment)  
+        
+        literal, stats = split(cnf, assignment, heuristic, stats)
+        new_cnf, new_assignment, stats = assign(literal, True, cnf, assignment, stats)
+        solved_assignment, stats = DP(new_cnf, heuristic, onSplit, stats, new_assignment)
+        
         # split with True satisfied
         if(len(solved_assignment) != 0):
-            return solved_assignment
+            return solved_assignment, stats
+        
         # or didn't work; then try False
         else:
-            return DP(*split(False, cnf, assignment))
-        
-def saveLabel(assignment, n_splits):
-    """save the finished sudoku in a .csv
+            #Why does it call split() instead of assign()?
+            if(stats):
+                stats["backtracks"] += 1
+            
+            literal, stats = split(cnf, assignment, heuristic, stats)
+            new_cnf, new_assignment, stats = assign(literal, False, cnf, assignment, stats)
+            return DP(new_cnf, heuristic, onSplit, stats, new_assignment)
+    
+def solve(cnf, heuristic=None, onSplit=None):
     """
+    Solves given SAT problem with Davis Putnam after removing tautology clauses
+    input:
+        cnf - SAT problem in clausal normal form; expects clauses to be 
+            dictionaries of literals
+        heuristic - which heuristic to use to decide on splits
+        onSplit - call back just before every split, arguments: (cnf, assignment)
+    output:
+        assignment - if satisfiable: list of assignments for solution 
+            else empty list
+        stats - dictionary with stats about run
+    """
+    stats = {
+            "DP_calls": 0,
+            "split_calls": 0,
+            "backtracks": 0,
+            "split_time": 0,
+            "assign_calls": 0,
+            "assign_time": 0,
+            "unit_clause_calls": 0,
+            "unit_clause_time": 0
+            }
     
-    sudoku_solution = [a for a in assignment if a > 0]
-    
-    sudoku_solution.sort()
-     
-    label = np.reshape(np.array(sudoku_solution*n_splits), 
-                       (n_splits, len(sudoku_solution)))
-
-    df = pd.DataFrame(label, columns = [x for x in range(len(sudoku_solution))])
-    
-    path = './data/SplitsLabel.csv'
-    try:
-        df.to_csv(path_or_buf = path, 
-                  mode = 'a',
-                  header = False)
-    except:
-        pass
-    
-def solve(cnf):
-    if(DEBUG):
-        global DPcalls, assignCalls, assignTime, unitClauseCalls, unitClauseTime, splitCalls, splitTime
-        DPcalls = 0
-        splitCalls = 0
-        splitTime = 0
-        assignCalls = 0
-        assignTime = 0
-        unitClauseCalls = 0
-        unitClauseTime = 0
-
     cnf = removeTautology(cnf)
-    assignment = DP(cnf)
     
-    if SAVE_SPLIT:
-        saveLabel(assignment, splitCalls)
+    #Davis Putnam Sat Solver
+    return DP(cnf, heuristic, onSplit, stats = stats)
 
-    if(DEBUG):
-        print("Satisfiable:", len(assignment) > 0)
-        print(f"DP calls {DPcalls}")
-        if(assignCalls > 0):
-            print(f"assign calls: {assignCalls} total time: {assignTime:.2f}s avg time: {assignTime/assignCalls * 1000:.3f}ms")
-        if(unitClauseCalls > 0):
-            print(f"unitClause calls: {unitClauseCalls} total time: {unitClauseTime:.2f}s avg time: {unitClauseTime/unitClauseCalls * 1000:.3f}ms")
-        if(splitCalls > 0):
-            print(f"split calls: {splitCalls} total time: {splitTime:.2f}s avg time: {splitTime/splitCalls * 1000:.3f}ms")
-    return assignment
+def print_stats(assignment, stats):
+    print("Satisfiable:", len(assignment) > 0)
+    print(f"DP calls {stats['DP_calls']}")
+    if(stats["assign_calls"] > 0):
+        print(f"assign calls: {stats['assign_calls']} total time: {stats['assign_time']:.2f}s avg time: {stats['assign_time']/stats['assign_calls'] * 1000:.3f}ms")
+    if(stats["unit_clause_calls"] > 0):
+        print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
+    if(stats["split_calls"] > 0):
+        print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
+        print(f"backtracks: {stats['backtracks']}")
 
 def main():
     from load_cnf import load_cnf
@@ -260,39 +239,8 @@ def main():
     filename = sys.argv[1]
 
     cnf = load_cnf(filename)
-    assignment = solve(cnf)
-    
-    sudoku_solution = [a for a in assignment if a > 0]
-    print(sudoku_solution)
-    print(len(sudoku_solution))
-    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
-    for value in sudoku_solution:
-        v = [int(i) for i in str(value)]
-        print(v)
-        matrix[v[0] - 1][v[1] - 1] = v[2]
-    print(matrix)
-    
-
-
-def alternative_main():
-    from load_cnf import load_cnf
-    
-    filename = ".\\data\\sudoku-example-processed.txt"
-    cnf = load_cnf(filename)
-    assignment = solve(cnf)
-    
-    
-    #print sudoku in a (almost) human readible way
-    sudoku_solution = [a for a in assignment if a > 0]
-    #print(sudoku_solution)
-    print(len(sudoku_solution))
-    matrix = [ [ 0 for i in range(9) ] for j in range(9) ]
-    for value in sudoku_solution:
-        v = [int(i) for i in str(value)]
-        #print(v)
-        matrix[v[0] - 1][v[1] - 1] = v[2]
-    print(matrix)
-    
+    assignment, stats = solve(cnf)
+    print_stats(assignment, stats)
 
 if __name__ == "__main__":
-    alternative_main()
+    main()

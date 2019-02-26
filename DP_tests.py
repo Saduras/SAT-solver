@@ -1,7 +1,6 @@
 import unittest
 from collections import defaultdict
 from DP import removeTautology, removeUnitClause, assign, split, DP
-from heuristics import DLIS, BOHM, nextLiteral, randomChoice
 
 class DPTests(unittest.TestCase):
     def test_removeTautology_empty(self):
@@ -28,7 +27,7 @@ class DPTests(unittest.TestCase):
         cnf = []
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, cnf)
         self.assertEqual(new_assignment, assignment)
         self.assertEqual(change, False)
@@ -37,7 +36,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True, 321:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, cnf)
         self.assertEqual(new_assignment, assignment)
         self.assertEqual(change, False)
@@ -46,7 +45,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -55,7 +54,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [123])
         self.assertEqual(change, True)
@@ -64,7 +63,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {423:True, -352:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{423:True, -352:True}])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -73,7 +72,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {234:True}, {423:True, -352:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{423:True, -352:True}])
         self.assertEqual(new_assignment, [-123, 234])
         self.assertEqual(change, True)
@@ -82,7 +81,7 @@ class DPTests(unittest.TestCase):
         cnf = [{-123:True}, {123:True, -352:True, 423:True}]
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [{-352:True, 423:True}])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -92,7 +91,7 @@ class DPTests(unittest.TestCase):
 
         assignment = []
 
-        new_cnf, new_assignment, change = removeUnitClause(cnf, assignment)
+        new_cnf, new_assignment, change, _ = removeUnitClause(cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [-123])
         self.assertEqual(change, True)
@@ -101,7 +100,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [])
         self.assertEqual(new_assignment, [123])
 
@@ -109,7 +108,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, False, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, False, cnf, assignment)
         self.assertEqual(new_cnf, [{}])
         self.assertEqual(new_assignment, [-123])
 
@@ -117,7 +116,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True},{123:True},{-234:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [ {-234:True} ])
         self.assertEqual(new_assignment, [123])
     
@@ -125,7 +124,7 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True, -123:True}, {-123:True}, {-234:True}]
         assignment = []
 
-        new_cnf, new_assignment = assign(123, True, cnf, assignment)
+        new_cnf, new_assignment, _ = assign(123, True, cnf, assignment)
         self.assertEqual(new_cnf, [ {}, {-234:True} ])
         self.assertEqual(new_assignment, [123])
 
@@ -133,100 +132,50 @@ class DPTests(unittest.TestCase):
         cnf = [{123:True, -123:True}, {-123:True, -234:True}]
         assignment = []
 
-        new_cnf, _ = assign(123, True, cnf, assignment)
+        new_cnf, _, _ = assign(123, True, cnf, assignment)
         self.assertEqual(cnf, [{123:True, -123:True}, {-123:True, -234:True}])
         self.assertEqual(new_cnf, [ {-234:True} ])
 
-    def test_split_oneClausePos(self):
+    def test_split_oneClause(self):
         cnf = [{123: True}]
         assignment = []
 
-        new_cnf, new_assignment = split(True, cnf, assignment)
-        self.assertEqual(new_cnf, [])
-        self.assertEqual(new_assignment, [123])
-
-    def test_split_oneClauseNeg(self):
-        cnf = [{123:True}]
-        assignment = []
-
-        new_cnf, new_assignment = split(False, cnf, assignment)
-        self.assertEqual(new_cnf, [{}])
-        self.assertEqual(new_assignment, [-123])
+        literal, _ = split(cnf, assignment, heuristic=None)
+        self.assertEqual(literal, 123)
 
     def test_split_multiClause(self):
         cnf = [{123:True}, {234:True}]
         assignment = []
 
-        new_cnf, new_assignment = split(True, cnf, assignment)
-        self.assertEqual(new_cnf, [{234:True}])
-        self.assertEqual(new_assignment, [123])
+        literal, _ = split(cnf, assignment, heuristic=None)
+        self.assertTrue(literal in [123, 234])
 
     def test_split_empty(self):
         cnf = []
         assignment = []
 
         with self.assertRaises(Exception) as context:
-            split(True, cnf, assignment)
+            split(cnf, assignment, heuristic=None)
 
         self.assertTrue('Invalid CNF' in str(context.exception))
 
     def test_DP_empty(self):
         cnf = []
 
-        assignment = DP(cnf)
+        assignment, _ = DP(cnf)
         self.assertEqual(assignment, [])
 
     def test_DP_tinyCase(self):
         cnf = [{123:True}]
 
-        assignment = DP(cnf)
+        assignment, _ = DP(cnf)
         self.assertEqual(assignment, [123])
-        
-    def test_DLIS_trivial(self):
-        cnf = [{-123:True}]
-        
-        literal = DLIS(cnf)
-        self.assertEqual(literal, (-123, True))
-    
-    def test_DLIS_tie(self):
-        cnf = [{-123:True, 234:True}]
-        
-        literal = DLIS(cnf)
-        self.assertEqual(literal, (-123, True))
 
-    def test_DLIS_twoClause(self):
-        cnf = [{-123:True, -312:True, 423:True, 123:True},
-               {-123:True}]
-        
-        literal = DLIS(cnf)
-        self.assertEqual(literal, (-123, True))
-    
-    def test_BOHM_trivial(self):
-        cnf = [{-123:True}]
-        
-        literal = BOHM(cnf)
-        self.assertEqual(literal, (-123, True))
+    def test_DP_recursion(self):
+        cnf = [{123:True, 234:True},{345:True, 456:True}]
 
-    def test_BOHM_multiClauseTie(self):
-        cnf = [{-123:True, 234:True}, {123:True, -234:True, 456:True}]
-        
-        literal = BOHM(cnf)
-        self.assertNotEqual(literal, (456, True))
-
-    def test_BOHM_shortClausePrio(self):
-        cnf = [{-123:True, 234:True, 345:True}, {345:True}, {234:True, 567:True}]
-        
-        literal = BOHM(cnf)
-        self.assertEqual(literal, (345, True))
-        
-    def test_nextLiteral(self):
-        cnf = [{-123:True, -312:True, 423:True, 123:True},
-               {-123:True}]
-        
-        literal = nextLiteral(cnf)
-        self.assertEqual(literal, (-123, True))
-        
-    
+        assignment, _ = DP(cnf)
+        self.assertEqual(len(assignment), 2)
 
 if __name__ == '__main__':
     unittest.main()
