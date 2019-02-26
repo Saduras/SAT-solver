@@ -180,11 +180,9 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
         
         # or didn't work; then try False
         else:
-            #Why does it call split() instead of assign()?
             if(stats):
                 stats["backtracks"] += 1
             
-            literal, stats = split(cnf, assignment, heuristic, stats)
             new_cnf, new_assignment, stats = assign(literal, False, cnf, assignment, stats)
             return DP(new_cnf, heuristic, onSplit, stats, new_assignment)
     
