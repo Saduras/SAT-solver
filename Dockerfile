@@ -5,7 +5,7 @@ FROM frolvlad/alpine-miniconda3
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY ./src/ /app/src
 
 # Install any needed packages
 RUN . activate base
@@ -13,7 +13,7 @@ RUN . activate base
 RUN pip install numpy pandas sklearn tqdm
 
 # Run unit tests
-RUN python -m unittest discover -s ./ -p '*_tests.py'
+RUN python -m unittest discover -s ./src -p '*_tests.py'
 
 # Run script when the container launches
-ENTRYPOINT ["python", "./sat.py"]
+ENTRYPOINT ["python", "./src/sat.py"]

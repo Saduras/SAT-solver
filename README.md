@@ -19,5 +19,5 @@ python sat.py ./data/sudoku-example-processed.txt
 
 Run all unit tests
 ```
-python -m unittest discover -s ./ -p '*_tests.py'
+python -m unittest discover -s ./src -p '*_tests.py'
 ```
