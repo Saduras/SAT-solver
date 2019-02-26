@@ -3,7 +3,7 @@ from abstract_heuristics import learnedHeuristic
 from time import time
 import warnings
 
-MAX_RECURSIONS = 100
+MAX_RECURSIONS = 1000
 
 def hasEmptyClause(cnf):
     return any([len(c) == 0 for c in cnf])
