@@ -219,11 +219,12 @@ def trainModel(model, df_x, df_y):
                                                                          log = False)
     
     # save the model to disk
-    #the saved file is 200Mb+ 
+    
     #filename = model + 'finalized_model.sav'
     #pickle.dump(MOD, open(filename, 'wb')) 
     
-    #save model to disk (lighter version)
+    #save model to disk 
+    #the saved file is 200Mb+ 
     filename = "..//model//" + model + 'finalized_model.sav'
     pickle.dump(MOD, open(filename, 'w+b'))  
     
@@ -237,20 +238,6 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     Output:
         one literal for the split.
     """
-    
-    rand_choice = np.random.uniform() #necessary to avoid infinite loops.
-    if rand_choice > .5:
-        if rand_choice > .9:
-            a = nextLiteral(cnf)
-        elif rand_choice > .8:
-            a = DLIS(cnf)
-        elif rand_choice > .7:
-            a = BOHM(cnf)
-        else:  
-            a = paretoDominant(cnf)
-            
-        print("heuristicly random literal:", a)
-        return  a
     
     #mapping from sudoku literal to cell space at current_sudoku.
     ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190)}
