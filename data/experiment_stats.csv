@@ -1,0 +1,36 @@
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+2,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS,2,,0,729,2.000615119934082,1,2.3125948905944824,1,2.3282532691955566,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+2,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS,2,,0,729,2.000615119934082,1,2.3125948905944824,1,2.3282532691955566,0.0,0.0
+3,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS_max,2,,0,729,1.9287467002868652,1,2.1252059936523438,1,2.15637469291687,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+2,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS,2,,0,729,2.000615119934082,1,2.3125948905944824,1,2.3282532691955566,0.0,0.0
+3,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS_max,2,,0,729,1.9287467002868652,1,2.1252059936523438,1,2.15637469291687,0.0,0.0
+4,../data/dimac_sudoku/subig20.sdk_156.txt,BOHM,2,,0,729,1.9483354091644287,1,2.172032356262207,1,2.1876986026763916,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+2,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS,2,,0,729,2.000615119934082,1,2.3125948905944824,1,2.3282532691955566,0.0,0.0
+3,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS_max,2,,0,729,1.9287467002868652,1,2.1252059936523438,1,2.15637469291687,0.0,0.0
+4,../data/dimac_sudoku/subig20.sdk_156.txt,BOHM,2,,0,729,1.9483354091644287,1,2.172032356262207,1,2.1876986026763916,0.0,0.0
+5,../data/dimac_sudoku/subig20.sdk_156.txt,paretoDominant,2,,0,729,1.7792701721191406,1,2.003031015396118,1,2.0186946392059326,0.0,0.0
+,sudoku name,heuristic,DP_calls,backtrackssplit_calls,split_time,assign_calls,assign_time,unit_clause_calls,unit_clause_time,solved_sudoku,solve_time,backtracks,split_calls
+0,../data/dimac_sudoku/subig20.sdk_156.txt,random,2,,0,729,1.8719367980957031,1,2.093867063522339,1,2.109520196914673,0.0,0.0
+1,../data/dimac_sudoku/subig20.sdk_156.txt,next,2,,0,729,2.0706796646118164,1,2.249908924102783,1,2.2811527252197266,0.0,0.0
+2,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS,2,,0,729,2.000615119934082,1,2.3125948905944824,1,2.3282532691955566,0.0,0.0
+3,../data/dimac_sudoku/subig20.sdk_156.txt,DLIS_max,2,,0,729,1.9287467002868652,1,2.1252059936523438,1,2.15637469291687,0.0,0.0
+4,../data/dimac_sudoku/subig20.sdk_156.txt,BOHM,2,,0,729,1.9483354091644287,1,2.172032356262207,1,2.1876986026763916,0.0,0.0
+5,../data/dimac_sudoku/subig20.sdk_156.txt,paretoDominant,2,,0,729,1.7792701721191406,1,2.003031015396118,1,2.0186946392059326,0.0,0.0
+6,../data/dimac_sudoku/subig20.sdk_156.txt,RF,2,,0,729,2.028639554977417,1,2.2057175636291504,1,2.223428726196289,0.0,0.0
