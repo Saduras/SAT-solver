@@ -19,6 +19,8 @@ import random
 from DP import solve
 import utils
 from load_cnf import load_cnf
+from tqdm import tqdm 
+#tqdm.pandas()
 
 def runExperiments(num_exp = 2):
     
@@ -58,7 +60,7 @@ def runExperiments(num_exp = 2):
     random.shuffle(onlyfiles)
     
     for h, heu in enumerate(heuristics):
-        print(heu)
+        print(f"heuristic: {heu} {h}/{len(heuristics)} ")
         for idx, f in enumerate(onlyfiles):
             
             #stops once the number of experiments has been reached.
@@ -93,6 +95,9 @@ def runExperiments(num_exp = 2):
                     print("NOT Solved")
                     
             df_exp = df_exp.append(stats, ignore_index = True)
+            
+            if idx% 10 == 0:
+                print(f"sudoku: {f[20:]} {idx}/{num_exp}", end = "\r")
                     
     #saves the expiriments 
     #should save it as a csv!
@@ -101,7 +106,7 @@ def runExperiments(num_exp = 2):
     
 
 if __name__ == "__main__":
-    runExperiments(num_exp = 1)
+    runExperiments(num_exp = 100)
     
 #     #load saved experiments   
 #    filename = 'experiment_stats.sav'
