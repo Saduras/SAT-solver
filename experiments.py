@@ -249,90 +249,6 @@ def alternative_main():
         matrix[v[0] - 1][v[1] - 1] = v[2]
     print(matrix)
     
-    
-def titleNAxis(fig_plot, title, label_x, label_y):
-    """enter title and axis labels with standard font sizes.
-    """
-    fig_plot.set_title(title, fontsize = 40)
-    fig_plot.set_xlabel(label_x, fontsize = 30)
-    fig_plot.set_ylabel(label_y, fontsize = 30)
-    
-    return fig_plot
-    
-def savePlot(fig_plot, fig_name, path = ".//figures//"):
-    """saves a seaborn figure
-    """
-    try:
-        fig = fig_plot.get_figure()
-        file_path = path + fig_name + ".png"
-        fig.savefig(file_path)
-        return file_path
-    except:
-        return False
-    
-def plotAllThat(df_exp, x_labels, y_labels, hue_labels, path = ".//figures//", plot_type = "all"):
-    
-    size_x = 30
-    size_y = 15
-    
-    sns.set(rc={'figure.figsize':(size_x,size_y)}) #in inches
-    fails ={"barplot": [0, []],
-            "boxplot": [0, []],
-            "swarmplot": [0, []],
-            "catplot": [0, []]}
-    
-    for i, label_i in enumerate(x_labels):
-        for j, label_j in enumerate(y_labels):
-            for k, label_k in enumerate(hue_labels):
-                title = label_i + " vs " + label_j + " " + str(label_k)
-                
-                #barplot
-                if (plot_type == "barplot") | (plot_type == "all"):       
-                    try:
-                        f_plot = sns.barplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
-                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
-                        file_path = savePlot(f_plot, title + " barplot")
-                    except:
-                        fails["barplot"][0] += 1
-                        fails["barplot"][1].append((label_i, label_j))
-   
-# FIND OUT WHY THOSE PLOTS WONT WORK                  
-#                #boxplot
-#                if (plot_type == "boxplot") | (plot_type == "all"):
-#                    try:
-#                        f_plot = sns.boxplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
-#                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
-#                        f_plot.set_size_inches(size_x, size_y)
-#                        file_path = savePlot(f_plot, title + " boxolot")
-#                    except:
-#                         fails["boxplot"][0] += 1
-#                         fails["boxplot"][1].append((label_i, label_j))
-#                         
-#                #swarmplot
-#                if (plot_type == "swarmplot") | (plot_type == "all"):
-#                    try:
-#                        f_plot = sns.swarmplot(x = label_i, y = label_j, hue = label_k, data = df_exp)   
-#                        #f_plot.set_size_inches(size_x, size_y)
-#                        f_plot = titleNAxis(f_plot, title, label_i, label_j)
-#                        file_path = savePlot(f_plot, title + " swarmplot")
-#                    except:
-#                        fails["swarmplot"][0] += 1
-#                        fails["swarmplot"][1].append((label_i, label_j))
-                        
-#                if (plot_type == "catplot") | (plot_type == "all"):
-#                    try:
-#                        f_plot = sns.catplot(x = label_i, 
-#                                             y = label_j, 
-#                                             hue = label_k, 
-#                                             data = df_exp, 
-#                                             height= size_y,
-#                                             aspect=size_x/size_y)   
-#                        file_path = savePlot(f_plot, title + " catplot")
-#                    except:
-#                        fails["catplot"][0] += 1
-#                        fails["catplot"][1].append((label_i, label_j))
-        
-    return fails
 
 def runExperiments(num_exp = 2):
     
@@ -408,40 +324,43 @@ def runExperiments(num_exp = 2):
                     
             df_exp = df_exp.append(stats, ignore_index = True)
                     
-    #saves the expiriments
+    #saves the expiriments 
+    #should save it as a csv!
     filename = 'experiment_stats.sav'
     pickle.dump(df_exp, open(filename, 'wb'))
     
-
 
 if __name__ == "__main__":
     runExperiments(num_exp = 1)
     
 #     #load saved experiments   
-    filename = 'experiment_stats.sav'
-    df_exp = pickle.load(open(filename, 'rb'))
-    
-    x_labels = ["heuristic", 
-                "DP_calls" 
-                "split_calls", 
-                "unit_clause_calls"]
-    
-    y_labels = ["DP_calls", 
-                "split_calls"
-                "backtracks"
-                "unit_clause_calls",
-                "solved_sudoku",
-                "split_time", 
-                "assign_calls",  
-                "assign_time",
-                "unit_clause_time",         
-                "solve_time"]
-    
-    hue_labels = [None]
-    
-    fails = plotAllThat(df_exp, x_labels, y_labels, hue_labels)
+#    filename = 'experiment_stats.sav'
+#    df_exp = pickle.load(open(filename, 'rb'))
 #    
+#    x_categoricals = ["heuristic"]
+#                
 #    
+#    x_numericals = ["DP_calls",
+#                    "back"
+#                    "split_calls", 
+#                    "unit_clause_calls"]
+#    
+#    y_labels = ["DP_calls", 
+#                "split_calls"
+#                "backtracks"
+#                "unit_clause_calls",
+#                "solved_sudoku",
+#                "split_time", 
+#                "assign_calls",  
+#                "assign_time",
+#                "unit_clause_time",         
+#                "solve_time"]
+#    
+#    hue_labels = [None]
+#    
+#    fails = plotAllThat(df_exp, x_labels, y_labels, hue_labels)
+##    
+##    
 #    
 #    
     
