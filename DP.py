@@ -116,7 +116,7 @@ def choseLiteral(cnf, assignment, choice = "next"):
 def split(cnf, assignment, heuristic, stats = None):
     
     if(stats):
-    stats["split_calls"] += 1
+        stats["split_calls"] += 1
         startTime = time()
 
     if(len(cnf) == 0 or len(cnf[0]) == 0):
@@ -135,14 +135,18 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
         Putnam algorithm
     input:
         cnf - SAT-problem in clausal normal form
+        heuristic - which heuristic to use to decide on splits
+        onSplit - call back just before every split, arguments: (cnf, assignment)
+        stats - dictionary with runtime stats; leave empty
         assignment - list of already assigned truth values; leave empty
     output:
-        If satisfiable: list of assignments for solution
-        else: empty list
+        assignment - if satisfiable: list of assignments for solution 
+            else empty list
+        stats - dictionary with stats about run
     """
-        
+    
     if(stats):
-    stats["DP_calls"] += 1
+        stats["DP_calls"] += 1
 
     # success condition: empty set of clauses
     if(len(cnf) == 0):
@@ -185,6 +189,18 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
             return DP(new_cnf, heuristic, onSplit, stats, new_assignment)
     
 def solve(cnf, heuristic=None, onSplit=None):
+    """
+    Solves given SAT problem with Davis Putnam after removing tautology clauses
+    input:
+        cnf - SAT problem in clausal normal form; expects clauses to be 
+            dictionaries of literals
+        heuristic - which heuristic to use to decide on splits
+        onSplit - call back just before every split, arguments: (cnf, assignment)
+    output:
+        assignment - if satisfiable: list of assignments for solution 
+            else empty list
+        stats - dictionary with stats about run
+    """
     stats = {
             "DP_calls": 0,
             "split_calls": 0,
@@ -205,9 +221,9 @@ def print_stats(assignment, stats):
     print("Satisfiable:", len(assignment) > 0)
     print(f"DP calls {stats['DP_calls']}")
     if(stats["assign_calls"] > 0):
-            print(f"assign calls: {stats['assign_calls']} total time: {stats['assign_time']:.2f}s avg time: {stats['assign_time']/stats['assign_calls'] * 1000:.3f}ms")
-        if(stats["unit_clause_calls"] > 0):
-            print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
+        print(f"assign calls: {stats['assign_calls']} total time: {stats['assign_time']:.2f}s avg time: {stats['assign_time']/stats['assign_calls'] * 1000:.3f}ms")
+    if(stats["unit_clause_calls"] > 0):
+        print(f"unitClause calls: {stats['unit_clause_calls']} total time: {stats['unit_clause_time']:.2f}s avg time: {stats['unit_clause_time']/stats['unit_clause_calls'] * 1000:.3f}ms")
     if(stats["split_calls"] > 0):
         print(f"split calls: {stats['split_calls']} total time: {stats['split_time']:.2f}s avg time: {stats['split_time']/stats['split_calls'] * 1000:.3f}ms")
         print(f"backtracks: {stats['backtracks']}")
