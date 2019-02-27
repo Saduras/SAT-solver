@@ -20,6 +20,8 @@ from DP import solve
 import utils
 from load_cnf import load_cnf
 from tqdm import tqdm 
+from scipy import stats
+
 #tqdm.pandas()
 
 def runExperiments(num_exp = 2, new_exp = True):
@@ -92,9 +94,9 @@ def runExperiments(num_exp = 2, new_exp = True):
             dimacs = rules + sudoku
             cnf = parse_cnf(dimacs)
             #solves the sudoku and get stats.
-            assignment, stats = solve(cnf, heu)
+            assignment, dict_stats = solve(cnf, heu)
             
-            if stats["split_calls"] == 0:
+            if dict_stats["split_calls"] == 0:
                 #delete trivial sudokus
                 print(f"Removed: {f}")
                 remove(f)
@@ -105,29 +107,29 @@ def runExperiments(num_exp = 2, new_exp = True):
                 stop_after += 1
                 continue
             
-            stats["heuristic"] = heu
-            stats["sudoku name"] = f        
-            stats["solve_time"] = (time() - start) #seconds
+            dict_stats["heuristic"] = heu
+            dict_stats["sudoku name"] = f        
+            dict_stats["solve_time"] = (time() - start) #seconds
             
             if(len(assignment) > 0):
     
                 #valid solution
-                stats["solved_sudoku"] = 1
+                dict_stats["solved_sudoku"] = 1
                 
                 # check if number of positive assignments is 81 
                 if(len([a for a in assignment if a > 0]) != 81):
                     #invalid solution
-                    stats["solved_sudoku"] = 0
+                    dict_stats["solved_sudoku"] = 0
                     print("Assignment length incorrect: ", len(assignment))
                     
             else:
                 #sudoku is not yet solved
-                stats["solved_sudoku"] = 0
+                dict_stats["solved_sudoku"] = 0
                 print("Sudoku not solved =/")
             
             
             #save stats in a dataframe.
-            df_exp = df_exp.append(stats, ignore_index = True)
+            df_exp = df_exp.append(dict_stats, ignore_index = True)
             
             
         #saves the expiriments after every heuristic is over.
@@ -136,44 +138,95 @@ def runExperiments(num_exp = 2, new_exp = True):
     
     #pickle.dump(df_exp, open(filename, 'wb'))
 
-def statisticalSignificance(df_exp):
-    # check here for implementation:
-    # https://docs.scipy.org/doc/scipy/reference/tutorial/stats.html#comparing-two-samples
-    # https://machinelearningmastery.com/parametric-statistical-significance-tests-in-python/
-    pass
+def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = True):
+    """Computes statistical significance using Kolmogorov–Smirnov 2sample test.
+    
+    Inputs:
+        df_exp: (pd.DataFrame) table containing the metric in a column.
+        heuristic: (list(str)) identifier of the rows to be considered, all of 
+            them will be evaluated in pair wise fashon.
+        metric: (str) name of the column containing the results of interest.
+    Output: (pd.Dataframe) a table containing the p-values
+    Saves: (.csv) saves the table containing the p-values
+    """
+    
+    #initialize dataframe
+    p_value = pd.DataFrame(data = None, columns = heuristics)
+    p_value["heuristic"] = None
+    p_value.set_index("heuristic")
+    
+    #dict to store temporary calculations
+    pv = {x: 0 for x in p_value.columns}
+    
+    
+    for heu_1 in heuristics:
+        
+        #select the rows linked to heu_1 
+        df_heu1 = df_exp[df_exp["heuristic"] == heu_1][metric]
+        pv["heuristic"] = heu_1
+        for heu_2 in heuristics:
+            
+            #select the 
+            df_heu2 = df_exp[df_exp["heuristic"] == heu_2][metric]
+            _, pv[heu_2] =  stats.ks_2samp(df_heu1, df_heu2)
+    
+        
+        p_value = p_value.append(pv, ignore_index = True)
+    
+    if save:
+        filename = '..//data//p_value_' + metric + '.csv'
+        p_value.to_csv(filename)
+    
+    return p_value
 
 if __name__ == "__main__":
     
-    runs = 100
+    runs = 0
     
-    for i in range(runs):
-        start = time()        
-        runExperiments(num_exp = 10, new_exp= False)
-        end = time() - start
-        print(f"run {i+1}/runs, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(runs-i)*end/(60*(i+1))}min")
-#     #load saved experiments   
-#    filename = '..//data//experiment_stats.csv'
-    #df_exp = read_csv(filename)
+#    for i in range(runs):
+#        start = time()        
+#        runExperiments(num_exp = 10, new_exp= False)
+#        end = time() - start
+#        print(f"run {i+1}/{runs}, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(runs-i)*end/(60*(i+1))}min")
+
+#    #load saved experiments   
+    filename = '..//data//experiment_stats.csv'
+    df_exp = pd.read_csv(filename)
+    
+    
+    heuristics =["random", 
+                 "next", 
+                 "DLIS", 
+                 "DLIS_max", 
+                 "BOHM", 
+                 "paretoDominant", 
+                 "RF"]
+    
+    y_labels = ["DP_calls", 
+                "split_calls",
+                "backtracks",
+                "unit_clause_calls",
+                "solved_sudoku",
+                "split_time", 
+                "assign_calls",  
+                "assign_time",
+                "unit_clause_time",         
+                "solve_time"]
+    
+    for l in y_labels:
+        statisticalSignificance(df_exp, heuristics, metric = l, save = True)
+    
 #    df_exp = pickle.load(open(filename, 'rb'))
 #    
 #    x_categoricals = ["heuristic"]
 #                
 #    
 #    x_numericals = ["DP_calls",
-#                    "back"
+#                    "backtrak"
 #                    "split_calls", 
 #                    "unit_clause_calls"]
 #    
-#    y_labels = ["DP_calls", 
-#                "split_calls"
-#                "backtracks"
-#                "unit_clause_calls",
-#                "solved_sudoku",
-#                "split_time", 
-#                "assign_calls",  
-#                "assign_time",
-#                "unit_clause_time",         
-#                "solve_time"]
+
 #    
 #    hue_labels = [None]
 #    
