@@ -16,7 +16,7 @@ from load_cnf import parse_cnf
 import pickle
 import seaborn as sns
 import random
-from DP import solve
+from DP import solve, Heuristic
 import utils
 from load_cnf import load_cnf
 from tqdm import tqdm 
@@ -74,7 +74,6 @@ def runExperiments(num_exp = 2, new_exp = True):
         stop_after = num_exp
         for idx, f in enumerate(onlyfiles):
             
-            
             if idx % 9 == 0:
                 print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
                       , end = "\n")
@@ -94,7 +93,7 @@ def runExperiments(num_exp = 2, new_exp = True):
             dimacs = rules + sudoku
             cnf = parse_cnf(dimacs)
             #solves the sudoku and get stats.
-            assignment, dict_stats = solve(cnf, heu)
+            assignment, dict_stats = solve(cnf, Heuristic(h+1))
             
             if dict_stats["split_calls"] == 0:
                 #delete trivial sudokus
@@ -112,7 +111,6 @@ def runExperiments(num_exp = 2, new_exp = True):
             dict_stats["solve_time"] = (time() - start) #seconds
             
             if(len(assignment) > 0):
-    
                 #valid solution
                 dict_stats["solved_sudoku"] = 1
                 
@@ -121,7 +119,6 @@ def runExperiments(num_exp = 2, new_exp = True):
                     #invalid solution
                     dict_stats["solved_sudoku"] = 0
                     print("Assignment length incorrect: ", len(assignment))
-                    
             else:
                 #sudoku is not yet solved
                 dict_stats["solved_sudoku"] = 0
@@ -132,7 +129,7 @@ def runExperiments(num_exp = 2, new_exp = True):
             df_exp = df_exp.append(dict_stats, ignore_index = True)
             
             
-        #saves the expiriments after every heuristic is over.
+        #saves the experiments after every heuristic is over.
         repeat = True
         while repeat:
             try:
@@ -141,8 +138,6 @@ def runExperiments(num_exp = 2, new_exp = True):
             except:
                 repeat = True
                 
-                    
-    
     #pickle.dump(df_exp, open(filename, 'wb'))
 
 def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = True):
