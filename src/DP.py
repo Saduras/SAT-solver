@@ -106,18 +106,19 @@ def choseLiteral(cnf, assignment, choice = Heuristic.NEXT):
         literal key,
         value for the assignment.
     """
+    
     #naive implementation:
-    if choice == 7: #Heuristic.RANDOM:
+    if choice == Heuristic.RANDOM:
         return randomChoice(cnf) 
-    elif choice == 2: #Heuristic.DLIS: 
+    elif choice == Heuristic.DLIS: # worst choice for split and time
         return DLIS(cnf, take = "min") 
-    elif choice ==  3: #Heuristic.DLIS_MAX:
+    elif choice == Heuristic.DLIS_MAX:
         return DLIS(cnf, take = "max") 
-    elif choice == 4: #Heuristic.BOHM:
+    elif choice == Heuristic.BOHM: #best choice for split
         return BOHM(cnf)
-    elif choice == 5: #Heuristic.PARETO_DOMINAT:
+    elif choice == Heuristic.PARETO_DOMINAT:
         return paretoDominant(cnf)
-    elif choice == 6: #Heuristic.RANDOM_FOREST:
+    elif choice == Heuristic.RANDOM_FOREST:
         return learnedHeuristic(cnf, assignment)
     else:
         return nextLiteral(cnf) #best choice for time
