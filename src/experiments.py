@@ -133,7 +133,14 @@ def runExperiments(num_exp = 2, new_exp = True):
             
             
         #saves the expiriments after every heuristic is over.
-        df_exp.to_csv(filename, mode = 'a', header = False)
+        repeat = True
+        while repeat:
+            try:
+                df_exp.to_csv(filename, mode = 'a', header = False)
+                repeat = False
+            except:
+                repeat = True
+                
                     
     
     #pickle.dump(df_exp, open(filename, 'wb'))
@@ -181,13 +188,13 @@ def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = T
 
 if __name__ == "__main__":
     
-    runs = 0
+    runs = 2
     
-#    for i in range(runs):
-#        start = time()        
-#        runExperiments(num_exp = 10, new_exp= False)
-#        end = time() - start
-#        print(f"run {i+1}/{runs}, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(runs-i)*end/(60*(i+1))}min")
+    for i in range(runs):
+        start = time()        
+        runExperiments(num_exp = 5, new_exp= False)
+        end = time() - start
+        print(f"run {i+1}/{runs}, took:{end}s , finishes in: {(runs-i-1)*end/60}min")
 
 #    #load saved experiments   
     filename = '..//data//experiment_stats.csv'
