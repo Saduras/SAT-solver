@@ -99,11 +99,6 @@ def runExperiments(num_exp = 2, new_exp = True):
                 #delete trivial sudokus
                 print(f"Removed: {f}")
                 remove(f)
-                #remove sudoku from the list
-                onlyfiles.pop(idx)
-                #ensures that all heuristics have recorded the same number of
-                #sudokus.
-                stop_after += 1
                 continue
             
             dict_stats["heuristic"] = heu
@@ -137,7 +132,7 @@ def runExperiments(num_exp = 2, new_exp = True):
                 repeat = False
             except:
                 repeat = True
-                
+    
     #pickle.dump(df_exp, open(filename, 'wb'))
 
 def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = True):
