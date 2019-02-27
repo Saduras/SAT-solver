@@ -169,7 +169,7 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     # stuck SAT problems
     if stats and stats["DP_calls"] > MAX_RECURSIONS:
         warnings.warn(f"Reached limit of {MAX_RECURSIONS} recursions.", RuntimeWarning)
-        return assignment, stats
+        return [], stats
     
     # simplification
     cnf, assignment, done, stats = removeUnitClause(cnf, assignment, stats)
