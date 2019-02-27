@@ -10,7 +10,7 @@ from abstract_heuristics import learnedHeuristic
 from time import time
 import numpy as np
 import pandas as pd
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 from load_cnf import parse_cnf
 import pickle
@@ -62,9 +62,14 @@ def runExperiments(num_exp = 2, new_exp = True):
     filename = '..//data//experiment_stats.csv'
     if new_exp:
         df_exp.to_csv(filename, mode = 'w')
-        
+    else:
+        df_exp.to_csv(filename, mode = 'a')
+    
+    random.shuffle(heuristics)
+    
     for h, heu in enumerate(heuristics):
         print(f"heuristic: {heu} {h+1}/{len(heuristics)} ")
+        stop_after = num_exp
         for idx, f in enumerate(onlyfiles):
             
             
@@ -73,7 +78,7 @@ def runExperiments(num_exp = 2, new_exp = True):
                       , end = "\n")
                 
             #stops once the number of experiments has been reached.
-            if idx >= num_exp:
+            if idx >= stop_after:
                 break
             
             #start counting time
@@ -88,6 +93,17 @@ def runExperiments(num_exp = 2, new_exp = True):
             cnf = parse_cnf(dimacs)
             #solves the sudoku and get stats.
             assignment, stats = solve(cnf, heu)
+            
+            if stats["split_calls"] == 0:
+                #delete trivial sudokus
+                print(f"Removed: {f}")
+                remove(f)
+                #remove sudoku from the list
+                onlyfiles.pop(idx)
+                #ensures that all heuristics have recorded the same number of
+                #sudokus.
+                stop_after += 1
+                continue
             
             stats["heuristic"] = heu
             stats["sudoku name"] = f        
@@ -108,20 +124,31 @@ def runExperiments(num_exp = 2, new_exp = True):
                 #sudoku is not yet solved
                 stats["solved_sudoku"] = 0
                 print("Sudoku not solved =/")
-                    
+            
+            
+            #save stats in a dataframe.
             df_exp = df_exp.append(stats, ignore_index = True)
             
             
-        #saves the expiriments 
+        #saves the expiriments after every heuristic is over.
         df_exp.to_csv(filename, mode = 'a', header = False)
                     
     
     #pickle.dump(df_exp, open(filename, 'wb'))
-    
+
+def statisticalSignificance(df_exp):
+    # check here for implementation:
+    # https://docs.scipy.org/doc/scipy/reference/tutorial/stats.html#comparing-two-samples
+    # https://machinelearningmastery.com/parametric-statistical-significance-tests-in-python/
+    pass
 
 if __name__ == "__main__":
-    runExperiments(num_exp = 2, new_exp= True)
     
+    for i in range(100):
+        start = time()        
+        runExperiments(num_exp = 10, new_exp= False)
+        end = time() - start
+        print(f"random run {i+1}/100, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(100-i)*end/(i+1)}s")
 #     #load saved experiments   
 #    filename = '..//data//experiment_stats.csv'
     #df_exp = read_csv(filename)
