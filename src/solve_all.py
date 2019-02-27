@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 from load_cnf import parse_cnf
 from DP import solve
@@ -9,8 +9,8 @@ sat = 0
 sat_error = 0
 unsat = 0
 save = True
-start_at = np.random.randint(17011) #11502 -> 5904
-stop_at = min(start_at + 100, 22011)
+start_at = 1500 #np.random.randint(17011) #11502 -> 5904
+stop_at =  min(start_at + 500, 18000)
 
 # load rules
 rule_path = '../data/sudoku-rules.txt'
@@ -25,6 +25,9 @@ for idx,f in enumerate(onlyfiles):
     if idx < start_at:
         continue
     
+    if idx%10 == 0:
+        print(f"Status update: {idx}/{stop_at}")
+    
     start = time()
     with open(f, 'r') as file:
         sudoku = file.read()
@@ -32,7 +35,15 @@ for idx,f in enumerate(onlyfiles):
     dimacs = rules + sudoku
     cnf = parse_cnf(dimacs)
 
-    assignment, _ = solve(cnf)
+    assignment, stats = solve(cnf)
+    
+    if stats["split_calls"] == 0:
+        #delete trivial sudokus
+        print(f"Removed: {f}")
+        remove(f)
+        #remove sudoku from the list
+        onlyfiles.pop(idx)
+        continue
 
     if(len(assignment) > 0):
         sat += 1

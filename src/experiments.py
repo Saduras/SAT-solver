@@ -144,11 +144,13 @@ def statisticalSignificance(df_exp):
 
 if __name__ == "__main__":
     
-    for i in range(100):
+    runs = 100
+    
+    for i in range(runs):
         start = time()        
         runExperiments(num_exp = 10, new_exp= False)
         end = time() - start
-        print(f"random run {i+1}/100, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(100-i)*end/(i+1)}s")
+        print(f"run {i+1}/runs, took:{end}s , average: {end/(i+1)}s/run, finishes in: {(runs-i)*end/(60*(i+1))}min")
 #     #load saved experiments   
 #    filename = '..//data//experiment_stats.csv'
     #df_exp = read_csv(filename)
