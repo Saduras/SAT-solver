@@ -57,6 +57,7 @@ def assign(literal, value, cnf, assignment, stats = None):
         or (-literal in clause and not value)):
             # literal becomes true; clause disappears
             result_cnf.remove(clause)
+
         else:
             # literal becomes false; literal is removed
             clause.pop(literal, None)
@@ -108,20 +109,20 @@ def choseLiteral(cnf, assignment, choice = Heuristic.NEXT):
     """
     
     #naive implementation:
-    if choice == Heuristic.RANDOM:
+    if choice ==  Heuristic.RANDOM:
         return randomChoice(cnf) 
-    elif choice == Heuristic.DLIS: # worst choice for split and time
+    elif choice ==  Heuristic.DLIS:
         return DLIS(cnf, take = "min") 
     elif choice == Heuristic.DLIS_MAX:
         return DLIS(cnf, take = "max") 
-    elif choice == Heuristic.BOHM: #best choice for split
+    elif choice == Heuristic.BOHM: 
         return BOHM(cnf)
     elif choice == Heuristic.PARETO_DOMINAT:
         return paretoDominant(cnf)
     elif choice == Heuristic.RANDOM_FOREST:
         return learnedHeuristic(cnf, assignment)
     else:
-        return nextLiteral(cnf) #best choice for time
+        return nextLiteral(cnf) 
  
 def split(cnf, assignment, heuristic, stats = None):
     
@@ -155,6 +156,7 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
         stats - dictionary with stats about run
     """
     
+    
     if(stats):
         stats["DP_calls"] += 1
 
@@ -173,6 +175,7 @@ def DP(cnf, heuristic=None, onSplit=None, stats=None, assignment = []):
     
     # simplification
     cnf, assignment, done, stats = removeUnitClause(cnf, assignment, stats)
+    
     if(done):
         return DP(cnf, heuristic, onSplit, stats, assignment)
     
