@@ -17,9 +17,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
+import random
 
 
-from heuristics import nextLiteral, DLIS, BOHM, randomChoice, paretoDominant
+from heuristics import nextLiteral
 
 #Progress bars
 #from tqdm import tqdm_notebook as tqdm
@@ -271,20 +272,21 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     for i in range(len(smart_literal)):
        for j in range(len(smart_literal[0])):
            smart_literal[i][j] += (i+1)*100 + (j+1)*10       
-    smart_literal = np.reshape(smart_literal, (1,81))
+    smart_literal = np.reshape(smart_literal, (1,81))    
            
     #return one of the predicted literals for a unresolved cell of the sudoku.
-    sl = open_ass[0] #np.random.choice(open_ass)
-
-    print("learned:", smart_literal[0][sl] )
+    random.shuffle(open_ass)
+    for sl in open_ass:
+        #safety check
+        if (smart_literal[0][sl] not in assignment) & (-smart_literal[0][sl] not in assignment):
+            print("learned:", smart_literal[0][sl])
+            return smart_literal[0][sl]
     
-    #safety check
-    if (smart_literal[0][sl] in assignment) | (-smart_literal[0][sl] in assignment):
-        next_lit = nextLiteral(cnf)
-        print(smart_literal[0][sl], "Already in the sudoku, next instead", sl, next_lit)       
-        return next_lit
+    next_lit = nextLiteral(cnf)
+    print( "No good sugestion, next used instead", next_lit)       
+    return next_lit
     
-    return smart_literal[0][sl]
+    
     
         
 
