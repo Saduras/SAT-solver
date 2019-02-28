@@ -4,7 +4,7 @@ from time import time
 import warnings
 from enum import Enum
 
-MAX_RECURSIONS = 1000
+MAX_RECURSIONS = 10000
 
 class Heuristic(Enum):
     NEXT = 1
