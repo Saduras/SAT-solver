@@ -26,15 +26,17 @@ from scipy import stats
 
 def runExperiments(num_exp = 2, new_exp = True):
     
-    heuristics =["random", 
-                 "next", 
-                 "DLIS", 
-                 "DLIS_max", 
-                 "BOHM", 
-                 "paretoDominant", 
-                 "RF"]
+
+#    enum_heu = {"Next": 1,
+#                "DLIS": 2,
+#                "DLIS max": 3,
+#                "BOHM": 4,
+#                "Pareto Dominant": 5,
+#                "Random Forest": 6,
+#                "Random": 7}
+    enum_heu = {"Random Forest": 6}
     
-    h = len(heuristics)
+    h = len(enum_heu)
     
     cols = ["sudoku name", 
             "heuristic", 
@@ -57,7 +59,8 @@ def runExperiments(num_exp = 2, new_exp = True):
             rules = file.read()
     
     # load sudokus
-    path = '../data/dimac_sudoku/'
+    #path = '../data/dimac_sudoku/'
+    path = '../data/hard_sudoku/'
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     random.shuffle(onlyfiles)
     
@@ -65,20 +68,13 @@ def runExperiments(num_exp = 2, new_exp = True):
     if new_exp:
         df_exp.to_csv(filename, mode = 'w')
     else:
-        df_exp.to_csv(filename, mode = 'a')
+        df_exp.to_csv(filename, mode = 'a', header = False)
     
-    random.shuffle(heuristics)
-    
-    for h, heu in enumerate(heuristics):
-        print(f"heuristic: {heu} {h+1}/{len(heuristics)} ")
+    for h, heu in enumerate(enum_heu):
+        print(f"heuristic: {heu} {h+1}/{len(enum_heu)} ")
         stop_after = num_exp
         for idx, f in enumerate(onlyfiles):
             
-            
-            if idx % 9 == 0:
-                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
-                      , end = "\n")
-                
             #stops once the number of experiments has been reached.
             if idx >= stop_after:
                 break
@@ -94,7 +90,7 @@ def runExperiments(num_exp = 2, new_exp = True):
             dimacs = rules + sudoku
             cnf = parse_cnf(dimacs)
             #solves the sudoku and get stats.
-            assignment, dict_stats = solve(cnf, heu)
+            assignment, dict_stats = solve(cnf, enum_heu[heu])
             
             if dict_stats["split_calls"] == 0:
                 #delete trivial sudokus
@@ -127,7 +123,11 @@ def runExperiments(num_exp = 2, new_exp = True):
                 dict_stats["solved_sudoku"] = 0
                 print("Sudoku not solved =/")
             
-            
+            if idx % 9 == 0:
+                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
+                      , end = "\n")
+                print(dict_stats)
+                
             #save stats in a dataframe.
             df_exp = df_exp.append(dict_stats, ignore_index = True)
             
@@ -188,13 +188,13 @@ def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = T
 
 if __name__ == "__main__":
     
-    runs = 2
+    runs = 10
     
     for i in range(runs):
         start = time()        
-        runExperiments(num_exp = 5, new_exp= False)
+        runExperiments(num_exp = 1, new_exp= False)
         end = time() - start
-        print(f"run {i+1}/{runs}, took:{end}s , finishes in: {(runs-i-1)*end/60}min")
+        print(f"run {i+1}/{runs}, took: {end/60}min , finishes in: {(runs-i-1)*end/60}min")
 
 #    #load saved experiments   
     filename = '..//data//experiment_stats.csv'
