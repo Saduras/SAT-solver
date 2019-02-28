@@ -279,7 +279,6 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
     for sl in open_ass:
         #safety check
         if (smart_literal[0][sl] not in assignment) & (-smart_literal[0][sl] not in assignment):
-            print("learned:", smart_literal[0][sl])
             return smart_literal[0][sl]
     
     next_lit = nextLiteral(cnf)
