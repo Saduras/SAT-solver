@@ -142,8 +142,8 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
     print('Loading data...', end='\r')    
     df_x = pd.read_csv(filepath_or_buffer = path_x,
                        header = None, 
-                       names = [x for x in range(81)]) #names =  [x for x in range(NUM_CLAUSES*l_PER_CLAUSE)]) 
-    
+                       names = [x for x in range(81)]) 
+                      
     print('Loading labels...', end='\r')
     df_y = pd.read_csv(filepath_or_buffer = path_y,
                        header = None, 
@@ -155,6 +155,10 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
     #df_y.drop(labels = nan_idx, axis = 0, inplace = True)
     #df_x.drop(labels = nan_idx, axis = 0, inplace = True)
     
+    #strips the cordinates away:
+    df_x = df_x % 10
+    df_y = df_y % 10
+     
     #Everything is an int.
     df_y.astype("int")
     df_x.astype("int")
@@ -225,7 +229,7 @@ def trainModel(model, df_x, df_y):
     
     #save model to disk 
     #the saved file is 200Mb+ 
-    filename = "..//model//" + model + 'finalized_model.sav'
+    filename = "../models/" + model + 'finalized_model.sav'
     pickle.dump(MOD, open(filename, 'w+b'))  
     
     return results, MOD   
@@ -239,29 +243,51 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
         one literal for the split.
     """
     
-    #mapping from sudoku literal to cell space at current_sudoku.
-    ass2sud = {x + (i+1)*10: i for i in range(81) for x in range(101, 190)}
-    
     #loads the state of the sudoku.
-    current_sudoku = np.zeros((1, 81))
-    for a in assignment: #is there a pythonic way of writing it?
-        if a > 0:
-            current_sudoku[0][ass2sud[a]] = a
+    current_sudoku = np.zeros((9, 9))
+    for x in assignment:
+        if x  <= 0:
+            continue 
+        #extract coordinates:
+        i = int(x/100) - 1 
+        j = int(x/10)%10 - 1
+        current_sudoku[i][j] = x%10
+    current_sudoku = np.reshape(current_sudoku, (1,81))
     
     #positions of the sudoku that still have to be resolved.
     _, open_ass = np.where(current_sudoku == 0)
     
     #load saved model.    
-    filename = "..//model//" + model + 'finalized_model.sav'
+    filename = "..//models//" + model + 'finalized_model.sav'
     MOD = pickle.load(open(filename, 'rb'))
     
     #get model prediction
-    smart_literal = MOD.predict(current_sudoku)[0]
-
+    MOD.verbose = False
+    smart_literal = MOD.predict(current_sudoku)[0].astype("int")
+    #literal_prob =  MOD.predict_proba(current_sudoku)
+      
+    #includes the coordinates back in the numbers.
+    smart_literal = np.reshape(smart_literal, (9,9))
+    for i in range(len(smart_literal)):
+       for j in range(len(smart_literal[0])):
+           smart_literal[i][j] += (i+1)*100 + (j+1)*10       
+    smart_literal = np.reshape(smart_literal, (1,81))
+           
     #return one of the predicted literals for a unresolved cell of the sudoku.
-    sl = np.random.choice(open_ass)
-    print("learned:", smart_literal[sl] )
-    return int(smart_literal[sl]), True
+    sl = open_ass[0] #np.random.choice(open_ass)
+    print(open_ass[0])
+    print(np.reshape(smart_literal, (9,9)))
+    print(np.reshape(current_sudoku, (9,9)))
+    text = input("ok?")
+    
+    #safety check
+    if smart_literal[0][sl] in current_sudoku:
+        next_lit = nextLiteral(cnf)
+        print(smart_literal[sl], "Already in the sudoku, next instead", sl, next_lit)       
+        return next_lit
+    
+    print("learned:", smart_literal[0][sl] )
+    return smart_literal[0][sl]
     
         
 
