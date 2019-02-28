@@ -150,21 +150,12 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
                        header = None, 
                        names =  [x for x in range(81)]) 
     
-    #Excludes the sudokus that were not solved
+    
     print('Pre-processing...', end='\r')
-    #nan_idx = df_y[1].index[df_y[1].apply(np.isnan)] #
-    #df_y.drop(labels = nan_idx, axis = 0, inplace = True)
-    #df_x.drop(labels = nan_idx, axis = 0, inplace = True)
     
-    #strips the cordinates away:
-    df_x = df_x % 10
-    df_y = df_y % 10
-     
-    #Everything is an int.
-    df_y.astype("int")
-    df_x.astype("int")
-    
-    print('Done!')
+    #Ensures correct indexing:
+    df_x.reset_index(inplace = True, drop = True)
+    df_y.reset_index(inplace = True, drop = True)
     
     #safety check:
     if len(df_x) < len(df_y):
@@ -172,7 +163,25 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
         df_y = df_y[0:len(df_x)]
     elif len(df_x) > len(df_y):
         print(f"WARNING: possible missmatch between df_x: {len(df_x)} and df_y: {len(df_y)}")
-        df_x = df_x[0:len(df_y)]        
+        df_x = df_x[0:len(df_y)] 
+    
+    #Excludes the sudokus that were not solved
+    nan_idx = df_y[1].index[df_y[1].apply(np.isnan)] 
+    if len(nan_idx) > 0:
+        df_x.drop(labels = nan_idx, axis = 0, inplace = True)
+        df_y.drop(labels = nan_idx, axis = 0, inplace = True)
+    
+    #strips the cordinates away:
+    df_x = df_x % 10
+    df_y = df_y % 10
+     
+    #Everything is an int.
+#    df_y.astype("int")
+#    df_x.astype("int")
+    
+    print('Done!')
+    
+           
     
     return df_x, df_y
 
