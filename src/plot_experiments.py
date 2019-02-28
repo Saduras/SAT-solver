@@ -191,16 +191,25 @@ if __name__ == "__main__":
                 "assign_time",
                 "unit_clause_time",         
                 "solve_time"]
+    
+    heuristics =["random", 
+                 "next", 
+                 "DLIS", 
+                 "DLIS_max", 
+                 "BOHM", 
+                 "paretoDominant", 
+                 "RF"]
 #    
     hue_labels = [None]
     
-    #working plot types: "strip", "swarm", "point", "bar", box, violin
-#    fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
-#                             plot_type = "strip")
-    fails = allInOne(df_exp, 
-                     hue = "heuristic", 
-                     labels = x_numericals, 
-                     name  = "pairplot")
+    #working plot types: "strip", "swarm", "point", "bar", box, boxen, violin
+    fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
+                             name = "",
+                             plot_type = "violin")
+#    fails = allInOne(df_exp, 
+#                     hue = "heuristic", 
+#                     labels = x_numericals, 
+#                     name  = "categorical_pair_plot")
     
     print(fails)
 #    
