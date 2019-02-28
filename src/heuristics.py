@@ -12,13 +12,13 @@ from collections import Counter
 def nextLiteral(cnf):
     """returns the first literal in the first clause.
     """
-    return list(cnf[0].keys())[0], True
+    return list(cnf[0].keys())[0]
 
 def randomChoice(cnf):
     num_clauses = len(cnf)-1
     clause = np.random.randint(0, num_clauses)
     rand_lit = random.choice(list(cnf[clause].keys()))
-    return rand_lit, True
+    return rand_lit
     
 def DLIS_max(cnf):
     return DLIS(cnf, take = "max")
@@ -39,10 +39,8 @@ def DLIS(cnf, take = "min"):
     else:
         #min performs better
         pop_literal = min(literal_count, key=lambda key: literal_count[key])
-            
-    value = True
         
-    return pop_literal, value
+    return pop_literal
 
 def BOHM(cnf):
     """satisfy or reduce size of many preferably short clauses
@@ -88,9 +86,8 @@ def BOHM(cnf):
     #returns the literal that is not dominated by any other. 
     literal_score.sort(key= lambda item: item[1], reverse=True)
     bohms_favorite = literal_score[0][0]
-    value = True
     
-    return bohms_favorite, value
+    return bohms_favorite
 
 def paretoDominant(cnf):
     """satisfy or reduce size of many preferably short clauses, based on BOHM.
@@ -143,9 +140,8 @@ def paretoDominant(cnf):
     
     #returns the literal that is not dominated by any other. 
     pareto =  max(literal_score, key=lambda key: literal_score[key])
-    value = True 
     
-    return pareto, value
+    return pareto
 
         
     

@@ -131,7 +131,7 @@ def split(cnf, assignment, heuristic, stats = None):
     if(len(cnf) == 0 or len(cnf[0]) == 0):
         raise Exception("Invalid CNF to split on! CNF or 1st clause are empty!", cnf)
 
-    literal, _ = choseLiteral(cnf, assignment, choice = heuristic)
+    literal = choseLiteral(cnf, assignment, choice = heuristic)
     
     if(stats):
         stats["split_time"] = time() - startTime
