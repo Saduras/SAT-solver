@@ -275,18 +275,15 @@ def learnedHeuristic(cnf, assignment, model = "RF"):
            
     #return one of the predicted literals for a unresolved cell of the sudoku.
     sl = open_ass[0] #np.random.choice(open_ass)
-    print(open_ass[0])
-    print(np.reshape(smart_literal, (9,9)))
-    print(np.reshape(current_sudoku, (9,9)))
-    text = input("ok?")
+
+    print("learned:", smart_literal[0][sl] )
     
     #safety check
-    if smart_literal[0][sl] in current_sudoku:
+    if (smart_literal[0][sl] in assignment) | (-smart_literal[0][sl] in assignment):
         next_lit = nextLiteral(cnf)
-        print(smart_literal[sl], "Already in the sudoku, next instead", sl, next_lit)       
+        print(smart_literal[0][sl], "Already in the sudoku, next instead", sl, next_lit)       
         return next_lit
     
-    print("learned:", smart_literal[0][sl] )
     return smart_literal[0][sl]
     
         
