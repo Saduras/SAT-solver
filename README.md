@@ -7,7 +7,7 @@ UvA 2019 Information Retrieval assignment
 docker build -t sat-solver -f ./Dockerfile .
 
 # run
-docker run -v <absolut-path-to-data-directory>:/data sat /data/sudoku-example-processed.txt -S2
+docker run -v <absolut-path-to-data-directory>:/data sat-solver /data/sudoku-example-processed.txt -S2
 
 # save image
 docker save sat-solver -o ./sat-solver

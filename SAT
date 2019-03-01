@@ -16,4 +16,4 @@ fi
 docker load -i "./$IMAGE_FILE"
 
 # run
-docker run -v "$BASEDIR/":"/data/" sat "/data/$1" $2
+docker run -v "$BASEDIR/":"/data/" sat-solver "/data/$1" $2
