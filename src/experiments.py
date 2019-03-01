@@ -17,26 +17,23 @@ import pickle
 import seaborn as sns
 import random
 from DP import solve, Heuristic
-import utils
+from utils import saveSS, saveLabel
 from load_cnf import load_cnf
 from tqdm import tqdm 
 from scipy import stats
 
 #tqdm.pandas()
 
-def runExperiments(num_exp = 2, new_exp = True):
+def runExperiments(num_exp = 2, new_exp = True, save = False):
     
 
-#    enum_heu = {"Next": 1,
-#                "DLIS": 2,
-#                "DLIS max": 3,
-#                "BOHM": 4,
-#                "Pareto Dominant": 5,
-#                "Random Forest": 6,
-#                "Random": 7}
-    enum_heu = {"Random Forest": 6}
-    
-    h = len(enum_heu)
+    enum_heu = {"Next": 1,
+                "DLIS": 2,
+                "DLIS max": 3,
+                "BOHM": 4,
+                "Pareto Dominant": 5,
+                "Random Forest": 6,
+                "Random": 7}
     
     cols = ["sudoku name", 
             "heuristic", 
@@ -59,8 +56,8 @@ def runExperiments(num_exp = 2, new_exp = True):
             rules = file.read()
     
     # load sudokus
-    #path = '../data/dimac_sudoku/'
-    path = '../data/hard_sudoku/'
+    path = '../data/dimac_sudoku/'
+    #path = '../data/hard_sudoku/'
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     random.shuffle(onlyfiles)
     
@@ -74,10 +71,6 @@ def runExperiments(num_exp = 2, new_exp = True):
         print(f"heuristic: {heu} {h+1}/{len(enum_heu)} ")
         stop_after = num_exp
         for idx, f in enumerate(onlyfiles):
-            
-            if idx % 9 == 0:
-                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
-                      , end = "\n")
                 
             #stops once the number of experiments has been reached.
             if idx >= stop_after:
@@ -93,8 +86,15 @@ def runExperiments(num_exp = 2, new_exp = True):
             #rule and sudoku are put together and parsed.
             dimacs = rules + sudoku
             cnf = parse_cnf(dimacs)
+            
             #solves the sudoku and get stats.
-            assignment, dict_stats = solve(cnf, Heuristic(h+1))
+            if save:
+                #solves and saves
+                assignment, dict_stats = solve(cnf, Heuristic(enum_heu[heu]), saveSS)
+                saveLabel(assignment, dict_stats["split_calls"])
+            else:
+                #just solves.
+                assignment, dict_stats = solve(cnf, Heuristic(enum_heu[heu]))
             
             if dict_stats["split_calls"] == 0:
                 #delete trivial sudokus
@@ -121,8 +121,7 @@ def runExperiments(num_exp = 2, new_exp = True):
                 print("Sudoku not solved =/")
             
             if idx % 9 == 0:
-                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}              "
-                      , end = "\n")
+                print(f"{heu} sudoku: {f[20:]} {idx+1}/{num_exp}")
                 print(dict_stats)
                 
             #save stats in a dataframe.
@@ -140,7 +139,7 @@ def runExperiments(num_exp = 2, new_exp = True):
     
     #pickle.dump(df_exp, open(filename, 'wb'))
 
-def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = True):
+def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = False):
     """Computes statistical significance using Kolmogorov–Smirnov 2sample test.
     
     Inputs:
@@ -187,13 +186,13 @@ if __name__ == "__main__":
     
     for i in range(runs):
         start = time()        
-        runExperiments(num_exp = 1, new_exp= False)
+        runExperiments(num_exp = 10, new_exp = False, save = False)
         end = time() - start
         print(f"run {i+1}/{runs}, took: {end/60}min , finishes in: {(runs-i-1)*end/60}min")
 
 #    #load saved experiments   
-    filename = '..//data//experiment_stats.csv'
-    df_exp = pd.read_csv(filename)
+ #   filename = '..//data//experiment_stats.csv'
+ #   df_exp = pd.read_csv(filename)
     
     
     heuristics =["random", 
@@ -214,9 +213,9 @@ if __name__ == "__main__":
                 "assign_time",
                 "unit_clause_time",         
                 "solve_time"]
-    
-    for l in y_labels:
-        statisticalSignificance(df_exp, heuristics, metric = l, save = True)
+#    
+#    for l in y_labels:
+#        statisticalSignificance(df_exp, heuristics, metric = l, save = True)
     
 #    df_exp = pickle.load(open(filename, 'rb'))
 #    
