@@ -1,0 +1,19 @@
+#!/bin/bash
+
+IMAGE_FILE="sat-solver"
+BASEDIR=$(pwd)
+
+if [ -f "$IMAGE_FILE" ]
+then
+	echo "$IMAGE_FILE found."
+else
+	echo "$IMAGE_FILE not found. Creating the image with docker..."
+    docker build -t $IMAGE_FILE -f "./Dockerfile" "./"
+    docker save sat-solver -o "./$IMAGE_FILE"
+fi
+
+# load image
+docker load -i "./$IMAGE_FILE"
+
+# run
+docker run -v "$BASEDIR/":"/data/" sat-solver "/data/$1" $2
