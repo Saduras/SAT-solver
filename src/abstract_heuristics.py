@@ -85,10 +85,10 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     #dict with dicts with parameters to be optimized.    
     m_params = { 
             "RF": {
-                    "n_estimators" : np.linspace(2, 5, 3, dtype = "int"),    #worth replacing with a distribution
+                    "n_estimators" : np.linspace(2, 50, 50, dtype = "int"),    #worth replacing with a distribution
                     "max_depth": [5, 10, None],         #worth replacing with a distribution
                     "min_samples_split": np.linspace(2, 10, 5, dtype = "int"),  #worth replacing with a distribution
-                    "max_features": ["sqrt", "log2", None],
+                    "max_features": ["sqrt", "log2", 21 , 42 ,None],
                     "verbose": [1+int(log)]
                     },
             "NN": {
@@ -102,7 +102,7 @@ def runLearningModel(x_train, x_test, y_train, y_test, model, log = False):
     #number of iterations for optimization. 
     random_search = RandomizedSearchCV(MOD,
                                        param_distributions = m_params[model], 
-                                       n_iter = 2,
+                                       n_iter = 20,
                                        scoring = scoreFunction,
                                        return_train_score = True,
                                        random_state = 42,
@@ -163,7 +163,7 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
         df_y = df_y[0:len(df_x)]
     elif len(df_x) > len(df_y):
         print(f"WARNING: possible missmatch between df_x: {len(df_x)} and df_y: {len(df_y)}")
-        df_x = df_x[0:len(df_y)] 
+        df_x = df_x[0:len(df_y)]    
     
     #Excludes the sudokus that were not solved
     nan_idx = df_y[1].index[df_y[1].apply(np.isnan)] 
@@ -176,8 +176,8 @@ def loadData(path_x = '../data/SSplits.csv', path_y = '../data/SplitsLabel.csv')
     df_y = df_y % 10
      
     #Everything is an int.
-#    df_y.astype("int")
-#    df_x.astype("int")
+    df_y.astype("int")
+    df_x.astype("int")
     
     print('Done!')
     
