@@ -69,7 +69,7 @@ def plotAllCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
                                      y_labels, 
                                      hue_labels, 
                                      path, 
-                                     plot_type, 
+                                     cp, 
                                      name,
                                      plot_size)
         
@@ -138,7 +138,7 @@ def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
     for label_i in x_labels:
         for label_j in y_labels:
             for label_k in hue_labels:
-                title = str(label_i) + " vs " + str(label_j) 
+                title = str(label_i) + "_vs_" + str(label_j) 
                 try:
                     #actually plots stuff
                     f_plot = sns.catplot(x = label_i, 
@@ -151,14 +151,16 @@ def plotCategoricals(df_exp, x_labels, y_labels, hue_labels = None,
                     f_plot.fig.suptitle(title)
                     try: 
                         #saves the plot using a unique name.
-                        file_name = path + name + title + " " + str(label_k) + " " + plot_type + ".png"
+                        file_name = path + name + title + "_" + str(label_k) + "_" + plot_type + ".png"
                         f_plot.savefig(file_name)
                         file_path.append(file_name)
-                    except:
+                    except Exception as e:
+                        print(e)
                         #if the file is not saved, the file path is returned as False.
                         file_path.append(False)
                     
-                except:
+                except Exception as e:
+                    print(e)
                     #logs the problem that failed to save the plot.
                     fails[0] += 1
                     fails[1].append((label_i, label_j, label_k, file_path))
