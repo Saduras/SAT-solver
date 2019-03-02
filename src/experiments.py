@@ -175,7 +175,7 @@ def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = F
         p_value = p_value.append(pv, ignore_index = True)
     
     if save:
-        filename = '..//data//p_value_' + metric + '.csv'
+        filename = '..//data//damhard_p_value_' + metric + '.csv'
         p_value.to_csv(filename)
     
     return p_value
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 #        print(f"run {i+1}/{runs}, took: {end/60}min , finishes in: {(runs-i-1)*end/60}min")
 
 #    #load saved experiments   
-    filename = '..//data//experiment_stats.csv'
+    filename = '..//data//experiment_stats_damhard.csv'
     df_exp = pd.read_csv(filename)
     
     df_exp.reset_index(inplace = True, drop = True)
