@@ -182,26 +182,26 @@ def statisticalSignificance(df_exp, heuristics, metric = "split_calls", save = F
 
 if __name__ == "__main__":
     
-    runs = 10
-    
-    for i in range(runs):
-        start = time()        
-        runExperiments(num_exp = 10, new_exp = False, save = False)
-        end = time() - start
-        print(f"run {i+1}/{runs}, took: {end/60}min , finishes in: {(runs-i-1)*end/60}min")
+#    runs = 10
+#    
+#    for i in range(runs):
+#        start = time()        
+#        runExperiments(num_exp = 10, new_exp = False, save = False)
+#        end = time() - start
+#        print(f"run {i+1}/{runs}, took: {end/60}min , finishes in: {(runs-i-1)*end/60}min")
 
 #    #load saved experiments   
- #   filename = '..//data//experiment_stats.csv'
- #   df_exp = pd.read_csv(filename)
+    filename = '..//data//experiment_stats.csv'
+    df_exp = pd.read_csv(filename)
+    
+    df_exp.reset_index(inplace = True, drop = True)
+    
+    if "Unnamed: 0" in df_exp.columns:
+        df_exp.drop(columns = "Unnamed: 0", inplace = True)
     
     
-    heuristics =["random", 
-                 "next", 
-                 "DLIS", 
-                 "DLIS_max", 
-                 "BOHM", 
-                 "paretoDominant", 
-                 "RF"]
+    heuristics =['Next', 'DLIS', 'DLIS max', 'BOHM', 'Pareto Dominant',
+       'Random Forest', 'Random']
     
     y_labels = ["DP_calls", 
                 "split_calls",
@@ -214,29 +214,9 @@ if __name__ == "__main__":
                 "unit_clause_time",         
                 "solve_time"]
 #    
-#    for l in y_labels:
-#        statisticalSignificance(df_exp, heuristics, metric = l, save = True)
-    
-#    df_exp = pickle.load(open(filename, 'rb'))
-#    
-#    x_categoricals = ["heuristic"]
-#                
-#    
-#    x_numericals = ["DP_calls",
-#                    "backtrak"
-#                    "split_calls", 
-#                    "unit_clause_calls"]
-#    
+    for l in y_labels:
+        statisticalSignificance(df_exp, heuristics, metric = l, save = True)
 
-#    
-#    hue_labels = [None]
-#    
-#    fails = plotAllThat(df_exp, x_labels, y_labels, hue_labels)
-##    
-##    
-#    
-#    
-    
     
     
     
