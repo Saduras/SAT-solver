@@ -170,8 +170,6 @@ if __name__ == "__main__":
          #load saved experiments   
     filename = '..//data//experiment_stats.csv'
     df_exp = pd.read_csv(filename)
-#    filename = 'experiment_stats.sav'
-#    df_exp = pickle.load(open(filename, 'rb'))
     
     x_categoricals = ["heuristic"]
                 
@@ -205,13 +203,15 @@ if __name__ == "__main__":
     #working plot types: "strip", "swarm", "point", "bar", box, boxen, violin
     fails = plotCategoricals(df_exp, x_categoricals, y_labels, 
                              name = "",
-                             plot_type = "violin")
+                             plot_type = "boxen")
+    print(fails)
+    
 #    fails = allInOne(df_exp, 
 #                     hue = "heuristic", 
 #                     labels = x_numericals, 
 #                     name  = "categorical_pair_plot")
-    
-    print(fails)
+#    
+#    print(fails)
 #    
 #    
 #    
