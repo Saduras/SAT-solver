@@ -54,4 +54,6 @@ def DIMACS_to_sudoku(assignment):
         matrix[v[0] - 1][v[1] - 1] = v[2]
     return matrix
 
-
+def assignmentToDIMACSFile(assignment, filename):	
+     with open(filename,'w') as file:	
+        file.write(' 0\n'.join([str(v) for v in assignment])) 
